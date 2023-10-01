@@ -1,7 +1,22 @@
 import json
-# from decouple import config
 import googleapiclient.discovery
 from config import youtube_api_keys
+
+
+def get_first_available_key(request_quota_size):
+    """Searching for the first key that has a sufficient quota size to complete the query
+
+    Args:
+        request_quota_size (int): quota size for request execution
+
+    Returns:
+        str: if finded then returns youtube api key else empty string
+    """
+    for youtube_api_key in youtube_api_keys:
+        if request_quota_size <= youtube_api_keys[youtube_api_key]:
+            return youtube_api_key
+
+    return ""
 
 
 class Youtube():
