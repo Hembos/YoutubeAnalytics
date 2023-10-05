@@ -3,7 +3,6 @@
     "video_id1": {
         "comments": [
             {
-                
                 "kind": "youtube#commentThread",
                 "etag": "TCK9YT6sJXNaMm9UzvQCmWmVH4o",
                 "id": "UgxdayQvHVjOhGi0YUN4AaABAg",
