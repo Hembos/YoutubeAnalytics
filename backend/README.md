@@ -7,12 +7,18 @@ pip install -r requirements.txt
 
 * Install MongoDB from https://www.mongodb.com/try/download/community
 
-* Create file backend/.env
+* Create file backend/.env, for example:
 ```
-YOUTUBE_API_KEY=[YOUR_API_KEYS]
-MONGODB_URL=MONGODB_CONNECTION_URL
-DATABASE_NAME=DATABASE_NAME
+MONGODB_IP=127.0.0.1
+MONGODB_PORT=27017
+DATABASE_NAME=Youtube
+SSH_CONNECTION=true
+SSH_IP=231.54.123.231
+SSH_USERNAME=suser
+SSH_PASSWORD=qwerty
 ```
+
+If ssh connection false, then leave ssh_options blank
 
 ## Fetching data
 
