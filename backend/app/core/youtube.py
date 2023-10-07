@@ -19,7 +19,7 @@ def get_first_available_key(request_quota_size):
     return ""
 
 
-class Youtube():
+class Youtube:
     def __init__(self) -> None:
         self.videos: dict = None
         self.youtube = googleapiclient.discovery.build(

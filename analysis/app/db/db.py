@@ -1,12 +1,13 @@
-from backend.app.config import mongodb_ip, mongodb_port, database_name, \
+from config import mongodb_ip, mongodb_port, database_name, \
     ssh_connection, ssh_ip, ssh_password, ssh_username
 from pymongo import MongoClient
-from config.collections_names import *
 from sshtunnel import SSHTunnelForwarder
-
 import logging
 
 from datetime import date
+
+from analysis.app.config.collections_names import CHANNELS_COLLECTION_NAME, COMMENTS_COLLECTION_NAME, \
+    VIDEOS_COLLECTION_NAME
 
 
 class DataBase:
@@ -35,24 +36,14 @@ class DataBase:
 
         logging.info("Close connection")
 
-    def insert_video(self) -> bool:
-        pass
+    def get_comments(self, video_id) -> list:
+        comments = []
+        for comment in self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}):
+            comments.append(comment)
+        return comments
 
-    def get_available_api(self, min_quota_size) -> dict:
-        query = {"quota": {"$gte": min_quota_size}}
-        api = self.__db[API_KEYS].find_one(query)
-
-        return api
-
-    def update_api_quota(self, key, quota_size) -> bool:
-        filter_query = {"key": key}
-        update_query = {"$set": {"quota": quota_size}}
-
-        return self.__db[API_KEYS].update_one(filter_query, update_query).raw_result["updatedExisting"]
-
-    def reset_api_quota(self):
-        today = date.today().isoformat()
-        query_filter = {"last_reset": {"$lt": today}}
-        update_query = {"$set": {"quota": 10000, "last_reset": today}}
-
-        return self.__db[API_KEYS].update_many(query_filter, update_query).raw_result["updatedExisting"]
+    def get_videos(self, channel_id) -> list:
+        videos = []
+        for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
+            videos.append(video)
+        return  videos
