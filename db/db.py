@@ -1,7 +1,7 @@
-from config import mongodb_ip, mongodb_port, database_name, \
+from db.config import mongodb_ip, mongodb_port, database_name, \
     ssh_connection, ssh_ip, ssh_password, ssh_username
 from pymongo import MongoClient
-from config.collections_names import *
+from db.config.collections_names import *
 from sshtunnel import SSHTunnelForwarder
 
 import logging
@@ -56,3 +56,25 @@ class DataBase:
         update_query = {"$set": {"quota": 10000, "last_reset": today}}
 
         return self.__db[API_KEYS].update_many(query_filter, update_query).raw_result["updatedExisting"]
+
+    def get_available_category(self) -> str:
+        query = {"completed": False}
+        category = self.__db[VIDEO_CATEGORIES].find_one(query)
+
+        if not category:
+            return None
+
+        return category["name"]
+
+    def complete_category(self, category) -> bool:
+        filter_query = {"name": category}
+        update_query = {"$set": {"completed": True}}
+
+        return self.__db[VIDEO_CATEGORIES].update_one(filter_query, update_query).raw_result["updatedExisting"]
+
+    def store_channel(self, channel: dict, channel_id: str) -> bool:
+        filter_query = {"channel_id": channel_id}
+        update_query = {"$set": channel}
+
+        return self.__db[CHANNELS_COLLECTION_NAME].update_one(
+            filter_query, update_query, upsert=True).raw_result["updatedExisting"]
