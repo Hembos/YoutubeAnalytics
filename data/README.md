@@ -21,3 +21,7 @@ SSH_PASSWORD=qwerty
 If ssh connection false, then leave ssh_options blank
 
 ## Fetching data
+
+```
+python data/app/data_fetching.py
+```
