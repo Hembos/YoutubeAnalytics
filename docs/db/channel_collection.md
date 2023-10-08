@@ -11,6 +11,7 @@
         "hiddenSubscriberCount": false,
         "videoCount": "5855",
         "keywords": "\"google developers\" developers \"Google developers videos\" \"google developer tutorials\" \"developer tutorials\" \"developer news\" android firebase tensorflow chrome web flutter \"google developer experts\" \"google launchpad\" \"developer updates\" google \"google design\"",
+        "category": "charity"
     }
 }
 ```
