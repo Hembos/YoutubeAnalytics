@@ -6,7 +6,7 @@ from sshtunnel import SSHTunnelForwarder
 
 import logging
 
-from datetime import date
+from datetime import date, datetime
 
 
 class DataBase:
@@ -35,9 +35,6 @@ class DataBase:
 
         logging.info("Close connection")
 
-    def insert_video(self) -> bool:
-        pass
-
     def get_available_api(self, min_quota_size) -> dict:
         query = {"quota": {"$gte": min_quota_size}}
         api = self.__db[API_KEYS].find_one(query)
@@ -57,24 +54,57 @@ class DataBase:
 
         return self.__db[API_KEYS].update_many(query_filter, update_query).raw_result["updatedExisting"]
 
-    def get_available_category(self) -> str:
-        query = {"completed": False}
-        category = self.__db[VIDEO_CATEGORIES].find_one(query)
-
-        if not category:
-            return None
-
-        return category["name"]
-
-    def complete_category(self, category) -> bool:
-        filter_query = {"name": category}
-        update_query = {"$set": {"completed": True}}
-
-        return self.__db[VIDEO_CATEGORIES].update_one(filter_query, update_query).raw_result["updatedExisting"]
-
-    def store_channel(self, channel: dict, channel_id: str) -> bool:
+    def store_channel(self, channel: dict, channel_id: str, category: str) -> bool:
         filter_query = {"channel_id": channel_id}
         update_query = {"$set": channel}
 
         return self.__db[CHANNELS_COLLECTION_NAME].update_one(
             filter_query, update_query, upsert=True).raw_result["updatedExisting"]
+
+    def store_video(self, video: dict, video_id: str) -> bool:
+        filter_query = {"video_id": video_id}
+        update_query = {"$set": video}
+
+        return self.__db[VIDEOS_COLLECTION_NAME].update_one(
+            filter_query, update_query, upsert=True).raw_result["updatedExisting"]
+
+    def is_channel_exists(self, channel_id: str):
+        query = {"channel_id": channel_id}
+        return self.__db[CHANNELS_COLLECTION_NAME].find_one(query) != None
+
+    def is_video_exists(self, video_id: str):
+        query = {"video_id": video_id}
+        return self.__db[VIDEOS_COLLECTION_NAME].find_one(query) != None
+
+    def get_scraper_request(self):
+        query = {"completed": False}
+        request = self.__db[SCRAPER_REQUESTS].find_one(query)
+
+        return request
+
+    def update_scraper_request(self, request: dict):
+        filter_query = {"_id": request["_id"]}
+
+        if request["tasks_left"] <= 0:
+            request["completed"] = True
+            request["date_completion"] = datetime.today().isoformat()
+
+        update_query = {"$set": request}
+        return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result["updatedExisting"]
+
+    def add_scraper_request(self, request: dict):
+        return self.__db[SCRAPER_REQUESTS].insert_one(request)
+
+    def store_comments(self, comments: dict, video_id: str) -> bool:
+        query = {"video_id": video_id}
+
+        comments_exists = self.__db[COMMENTS_COLLECTION_NAME].find_one(query)
+
+        if comments_exists:
+            comments["comments"] = comments_exists["comments"] + \
+                comments["comments"]
+
+        update_query = {"$set": comments}
+
+        return self.__db[COMMENTS_COLLECTION_NAME].update_one(
+            query, update_query, upsert=True).raw_result["updatedExisting"]

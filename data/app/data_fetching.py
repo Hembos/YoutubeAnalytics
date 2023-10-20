@@ -1,10 +1,10 @@
-from config.requests_types import Request, GET_CHANNELS_BY_CATEGORY
 from config.quota_size import *
 from core.youtube import Youtube
 from queue import Queue
 import logging
 from db.db import DataBase
-from core.requests_func import requests_func
+from core.requests_func import requests_func, requests_quota_size
+from googleapiclient.errors import HttpError
 
 # Обновить апи
 #
@@ -23,51 +23,55 @@ from core.requests_func import requests_func
 # Делать проверку на работоспособность прокси
 
 
-def execute_requests(requests_queue: Queue, db: DataBase):
+def fetch(db: DataBase):
     youtube_api = None
     youtube = None
 
-    while not requests_queue.empty():
-        new_youtube_api = db.get_available_api(
-            requests_queue.queue[0].quota_size)
-
-        if not new_youtube_api:
-            break
-
-        if youtube_api == None or youtube_api["key"] != new_youtube_api["key"]:
-            youtube_api = new_youtube_api
-
-            youtube = Youtube(youtube_api["key"])
-
-        request = requests_queue.get()
-        requests_func[request.type](
-            youtube, request.header, requests_queue, db)
-
-        youtube_api["quota"] = youtube_api["quota"] - request.quota_size
-        db.update_api_quota(
-            youtube_api["key"], youtube_api["quota"])
-
-
-def fetch(db: DataBase):
-    requests_queue = Queue()
-    category = None
-
     while True:
-        db.reset_api_quota()
+        try:
+            db.reset_api_quota()
 
-        if requests_queue.empty():
-            category = db.get_available_category()
+            request = db.get_scraper_request()
+            print(request)
 
-            if not category:
+            if not request:
                 continue
 
-            requests_queue.put(
-                Request(SEARCH_REQUEST, GET_CHANNELS_BY_CATEGORY, {"category": category}))
+            request_quota_size = requests_quota_size[request["type"]]
+            new_youtube_api = db.get_available_api(
+                requests_quota_size[request["type"]])
 
-        execute_requests(requests_queue, db)
+            if not new_youtube_api:
+                continue
 
-        if requests_queue.empty():
-            db.complete_category(category)
+            if youtube_api == None or youtube_api["key"] != new_youtube_api["key"]:
+                youtube_api = new_youtube_api
+
+                youtube = Youtube(youtube_api["key"])
+
+            requests_func[request["type"]](youtube, request["data"], db)
+
+            youtube_api["quota"] = youtube_api["quota"] - request_quota_size
+            db.update_api_quota(youtube_api["key"], youtube_api["quota"])
+
+            request["tasks_left"] -= 1
+            db.update_scraper_request(request)
+        except HttpError as e:
+            print(e)
+            # db.update_api_quota(youtube_api["key"], 0)
+        # if requests_queue.empty():
+        #     category = db.get_available_category()
+
+        #     if not category:
+        #         continue
+
+        #     requests_queue.put(
+        #         Request(SEARCH_REQUEST, GET_CHANNELS_BY_CATEGORY, {"category": category}))
+
+        # execute_requests(requests_queue, db)
+
+        # if requests_queue.empty():
+        #     db.complete_category(category)
 
 
 if __name__ == "__main__":

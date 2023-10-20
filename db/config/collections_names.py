@@ -9,3 +9,5 @@ CHANNELS_COLLECTION_NAME = "channels"
 ANALYSIS_COLLECTION_NAME = "analysis"
 
 VIDEO_CATEGORIES = "video_categories"
+
+SCRAPER_REQUESTS = "scraper_requests"
