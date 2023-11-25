@@ -1,3 +1,3 @@
 # Модель предметной области
 
-![](images/DomainModel.svg)
+![](images/DomainModel.png)

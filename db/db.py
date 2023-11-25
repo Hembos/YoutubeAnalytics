@@ -1,6 +1,6 @@
 from db.config import mongodb_ip, mongodb_port, database_name, \
     ssh_connection, ssh_ip, ssh_password, ssh_username
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 from db.config.collections_names import *
 from sshtunnel import SSHTunnelForwarder
 
@@ -54,8 +54,8 @@ class DataBase:
 
         return self.__db[API_KEYS].update_many(query_filter, update_query).raw_result["updatedExisting"]
 
-    def store_channel(self, channel: dict, channel_id: str, category: str) -> bool:
-        filter_query = {"channel_id": channel_id}
+    def store_channel(self, channel: dict, channel_id: str) -> bool:
+        filter_query = {"id": channel_id}
         update_query = {"$set": channel}
 
         return self.__db[CHANNELS_COLLECTION_NAME].update_one(
@@ -95,16 +95,13 @@ class DataBase:
     def add_scraper_request(self, request: dict):
         return self.__db[SCRAPER_REQUESTS].insert_one(request)
 
-    def store_comments(self, comments: dict, video_id: str) -> bool:
-        query = {"video_id": video_id}
+    def store_comments(self, comments: dict) -> None:
+        operations = []
+        for comment in comments:
+            filter_query = {"id": comment["id"]}
+            update_query = {"$set": comment}
+            operations.append(
+                UpdateOne(filter_query, update_query, upsert=True))
 
-        comments_exists = self.__db[COMMENTS_COLLECTION_NAME].find_one(query)
-
-        if comments_exists:
-            comments["comments"] = comments_exists["comments"] + \
-                comments["comments"]
-
-        update_query = {"$set": comments}
-
-        return self.__db[COMMENTS_COLLECTION_NAME].update_one(
-            query, update_query, upsert=True).raw_result["updatedExisting"]
+        self.__db[COMMENTS_COLLECTION_NAME].bulk_write(
+            operations, ordered=False)

@@ -44,7 +44,7 @@ def fetch(db: DataBase):
             if not new_youtube_api:
                 continue
 
-            if youtube_api == None or youtube_api["key"] != new_youtube_api["key"]:
+            if youtube_api is None or youtube_api["key"] != new_youtube_api["key"]:
                 youtube_api = new_youtube_api
 
                 youtube = Youtube(youtube_api["key"])
@@ -58,20 +58,6 @@ def fetch(db: DataBase):
             db.update_scraper_request(request)
         except HttpError as e:
             print(e)
-            # db.update_api_quota(youtube_api["key"], 0)
-        # if requests_queue.empty():
-        #     category = db.get_available_category()
-
-        #     if not category:
-        #         continue
-
-        #     requests_queue.put(
-        #         Request(SEARCH_REQUEST, GET_CHANNELS_BY_CATEGORY, {"category": category}))
-
-        # execute_requests(requests_queue, db)
-
-        # if requests_queue.empty():
-        #     db.complete_category(category)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-import json
 import googleapiclient.discovery
 
 
@@ -31,11 +30,13 @@ class Youtube():
             part="snippet,contentDetails,statistics,brandingSettings",
             id=channel_id
         )
+
         response = request.execute()
 
         response_channel = response["items"][0]
 
         channel = {
+            "id": response_channel["id"],
             "title": response_channel["snippet"]["title"] if "title" in response_channel["snippet"] else None,
             "description": response_channel["snippet"]["description"] if "description" in response_channel["snippet"] else None,
             "customUrl": response_channel["snippet"]["customUrl"] if "customUrl" in response_channel["snippet"] else None,
@@ -49,6 +50,21 @@ class Youtube():
         }
 
         return channel
+
+    def get_channel_by_url(self, url: str) -> dict:
+        request = self.youtube.search().list(
+            q=url,
+            part='id',
+            type='channel',
+            fields='items(id(channelId))',
+            maxResults=1
+        )
+
+        response = request.execute()
+
+        channel_id = response["items"][0]["id"]["channelId"]
+
+        return self.get_channel(channel_id)
 
     def get_videos(self, playlist_id: str, page_token: str):
         request = self.youtube.playlistItems().list(
@@ -75,6 +91,9 @@ class Youtube():
             id=video_id
         )
         response = request.execute()
+
+        if len(response["items"]) == 0:
+            return
 
         response_video = response["items"][0]
 
@@ -104,11 +123,12 @@ class Youtube():
 
         return video
 
-    def get_comments(self, video_id: str):
+    def get_comments(self, video_id: str, pageToken: str):
         request = self.youtube.commentThreads().list(
             part="snippet,replies",
             maxResults=100,
-            videoId=video_id
+            videoId=video_id,
+            pageToken=pageToken
         )
         response = request.execute()
 
@@ -118,56 +138,48 @@ class Youtube():
 
         comments = list()
         for response_comment in response_comments:
-            resp_replies = None
-            replies = list()
+            tmp = response_comment["snippet"]["topLevelComment"]["snippet"]
+            comment = {
+                "id": response_comment["id"] if "id" in response_comment else None,
+                "videoId": video_id,
+                "textDisplay": tmp["textDisplay"] if "textDisplay" in tmp else None,
+                "textOriginal": tmp["textOriginal"] if "textOriginal" in tmp else None,
+                "authorDisplayName": tmp["authorDisplayName"] if "authorDisplayName" in tmp else None,
+                "authorProfileImageUrl": tmp["authorProfileImageUrl"] if "authorProfileImageUrl" in tmp else None,
+                "authorChannelUrl": tmp["authorChannelUrl"] if "authorChannelUrl" in tmp else None,
+                "authorChannelId": tmp["authorChannelId"]["value"] if "authorChannelId" in tmp else None,
+                "viewerRating": tmp["viewerRating"] if "viewerRating" in tmp else None,
+                "likeCount": tmp["likeCount"] if "likeCount" in tmp else None,
+                "publishedAt": tmp["publishedAt"] if "publishedAt" in tmp else None,
+                "updatedAt": tmp["updatedAt"] if "updatedAt" in tmp else None,
+                "totalReplyCount": response_comment["snippet"]["totalReplyCount"] if "totalReplyCount" in response_comment["snippet"] else None,
+                "isReply": False
+            }
 
-            if response_comment["snippet"]["totalReplyCount"] > 0:
-                resp_replies = response_comment["replies"]
+            comments.append(comment)
 
-                for resp_reply in resp_replies["comments"]:
+            if 'replies' in response_comment:
+                for resp_reply in response_comment['replies']['comments']:
                     reply = {
                         "id": resp_reply["id"] if "id" in resp_reply else None,
+                        "videoId": video_id,
                         "textDisplay": resp_reply["snippet"]["textDisplay"] if "textDisplay" in resp_reply["snippet"] else None,
                         "textOriginal": resp_reply["snippet"]["textOriginal"] if "textOriginal" in resp_reply["snippet"] else None,
                         "parentId": resp_reply["snippet"]["parentId"] if "parentId" in resp_reply["snippet"] else None,
                         "authorDisplayName": resp_reply["snippet"]["authorDisplayName"] if "authorDisplayName" in resp_reply["snippet"] else None,
                         "authorProfileImageUrl": resp_reply["snippet"]["authorProfileImageUrl"] if "authorProfileImageUrl" in resp_reply["snippet"] else None,
                         "authorChannelUrl": resp_reply["snippet"]["authorChannelUrl"] if "authorChannelUrl" in resp_reply["snippet"] else None,
-                        "authorChannelId": resp_reply["snippet"]["authorChannelId"] if "authorChannelId" in resp_reply["snippet"] else None,
+                        "authorChannelId": resp_reply["snippet"]["authorChannelId"]["value"] if "authorChannelId" in resp_reply["snippet"] else None,
                         "canRate": resp_reply["snippet"]["canRate"] if "canRate" in resp_reply["snippet"] else None,
                         "viewerRating": resp_reply["snippet"]["viewerRating"] if "viewerRating" in resp_reply["snippet"] else None,
                         "likeCount": resp_reply["snippet"]["likeCount"] if "likeCount" in resp_reply["snippet"] else None,
                         "publishedAt": resp_reply["snippet"]["publishedAt"] if "publishedAt" in resp_reply["snippet"] else None,
-                        "updatedAt": resp_reply["snippet"]["updatedAt"] if "updatedAt" in resp_reply["snippet"] else None
+                        "updatedAt": resp_reply["snippet"]["updatedAt"] if "updatedAt" in resp_reply["snippet"] else None,
+                        "isReply": True
                     }
+                    comments.append(reply)
 
-                    replies.append(reply)
-
-            tmp = response_comment["snippet"]["topLevelComment"]["snippet"]
-            comment = {
-                "id": response_comment["id"] if "id" in response_comment else None,
-                "textDisplay": tmp["textDisplay"] if "textDisplay" in tmp else None,
-                "textOriginal": tmp["textOriginal"] if "textOriginal" in tmp else None,
-                "authorDisplayName": tmp["authorDisplayName"] if "authorDisplayName" in tmp else None,
-                "authorProfileImageUrl": tmp["authorProfileImageUrl"] if "authorProfileImageUrl" in tmp else None,
-                "authorChannelUrl": tmp["authorChannelUrl"] if "authorChannelUrl" in tmp else None,
-                "authorChannelId": tmp["authorChannelId"] if "authorChannelId" in tmp else None,
-                "viewerRating": tmp["viewerRating"] if "viewerRating" in tmp else None,
-                "likeCount": tmp["likeCount"] if "likeCount" in tmp else None,
-                "publishedAt": tmp["publishedAt"] if "publishedAt" in tmp else None,
-                "updatedAt": tmp["updatedAt"] if "updatedAt" in tmp else None,
-                "totalReplyCount": response_comment["snippet"]["totalReplyCount"] if "totalReplyCount" in response_comment["snippet"] else None,
-                "replies": replies
-            }
-
-            comments.append(comment)
-
-        video_comments = {
-            "video_id": video_id,
-            "comments": comments
-        }
-
-        return (next_page_token, video_comments)
+        return (next_page_token, comments)
 
     def __del__(self) -> None:
         self.youtube.close()
