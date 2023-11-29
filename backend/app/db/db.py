@@ -1,4 +1,4 @@
-from backend.app.config import mongodb_ip, mongodb_port, database_name, \
+from analysis.app.config import mongodb_ip, mongodb_port, database_name, \
     ssh_connection, ssh_ip, ssh_password, ssh_username
 from pymongo import MongoClient
 from config.collections_names import *

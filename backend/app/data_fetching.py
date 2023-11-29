@@ -19,8 +19,8 @@ def fetch():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
-                        filename="backend/backend.log", format="%(asctime)s %(levelname)s %(message)s")
+    # logging.basicConfig(level=logging.INFO,
+    #                     filename="backend/backend.log", format="%(asctime)s %(levelname)s %(message)s")
 
     db = DataBase()
     db.create_connection()

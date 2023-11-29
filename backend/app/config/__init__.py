@@ -1,6 +1,6 @@
 from decouple import Config, RepositoryEnv
 
-config = Config(RepositoryEnv("backend/.env"))
+config = Config(RepositoryEnv(r"C:\Users\Aleksandr\Documents\HW\1\Big data\YoutubeAnalytics\backend\.env"))
 
 mongodb_ip = config('MONGODB_IP')
 mongodb_port = config('MONGODB_PORT', cast=int)

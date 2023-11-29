@@ -39,13 +39,8 @@ def plot_counts_by_datetime(comments: dict, video_name: str) -> list:
     plt.xticks(rotation=45)
     plt.grid(True)
     plt.tight_layout()
+    logging.basicConfig(level=logging.INFO,
+                        filename="analysis/analysis.log", format="%(asctime)s %(levelname)s %(message)s")
     plt.savefig(f'Comments_count_of_{video_name}.png')
 
 
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
-                        filename="analysis/analysis.log", format="%(asctime)s %(levelname)s %(message)s")
-
-    loader = Loader()
-    # need to load some channels for test
-    loader.get_comments_with_replies()

@@ -1,4 +1,4 @@
-from config import mongodb_ip, mongodb_port, database_name, \
+from analysis.app.config import mongodb_ip, mongodb_port, database_name, \
     ssh_connection, ssh_ip, ssh_password, ssh_username
 from pymongo import MongoClient
 from sshtunnel import SSHTunnelForwarder
@@ -42,8 +42,8 @@ class DataBase:
             comments.append(comment)
         return comments
 
-    def get_videos(self, channel_id) -> list:
-        videos = []
+    def get_videos(self, channel_id) -> dict:
+        videos = {}
         for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
-            videos.append(video)
-        return  videos
+            videos[video['video_id']] = video
+        return videos
