@@ -7,6 +7,7 @@ from sshtunnel import SSHTunnelForwarder
 import logging
 
 from datetime import date, datetime
+from time import time
 
 
 class DataBase:
@@ -96,6 +97,7 @@ class DataBase:
         return self.__db[SCRAPER_REQUESTS].insert_one(request)
 
     def store_comments(self, comments: dict) -> None:
+        start = time()
         operations = []
         for comment in comments:
             filter_query = {"id": comment["id"]}
@@ -105,3 +107,4 @@ class DataBase:
 
         self.__db[COMMENTS_COLLECTION_NAME].bulk_write(
             operations, ordered=False)
+        print(time() - start)

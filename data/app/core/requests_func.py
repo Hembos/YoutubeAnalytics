@@ -66,6 +66,27 @@ def get_channel_by_url(youtube: Youtube, data: dict, db: DataBase) -> None:
     db.add_scraper_request(request)
 
 
+def get_channel_by_video_id(youtube: Youtube, data: dict, db: DataBase) -> None:
+    channel = youtube.get_channel_by_video_id(data["video_id"])
+
+    db.store_channel(channel, channel["id"])
+
+    playlist_id = channel["id"][:1] + 'U' + channel["id"][2:]
+
+    request = {
+        "type": GET_VIDEOS_BY_CHANNEL_ID,
+        "tasks_left": ceil(float(channel["videoCount"])/50),
+        "completed": False,
+        "date_completion": None,
+        "data": {
+            "playlist_id": playlist_id,
+            "pageToken": None
+        }
+    }
+
+    db.add_scraper_request(request)
+
+
 def get_videos_by_channel_id(youtube: Youtube, data: dict, db: DataBase) -> None:
     next_page_token, videos_ids = youtube.get_videos(
         data["playlist_id"], data["pageToken"])
@@ -126,7 +147,8 @@ requests_func = {
     GET_VIDEOS_BY_CHANNEL_ID: get_videos_by_channel_id,
     GET_VIDEO_BY_ID: get_video_by_id,
     GET_COMMENTS_BY_VIDEO_ID: get_comments_by_video_id,
-    GET_CHANNEL_BY_URL: get_channel_by_url
+    GET_CHANNEL_BY_URL: get_channel_by_url,
+    GET_CHANNEL_BY_VIDEO_ID: get_channel_by_video_id
 }
 
 requests_quota_size = {
@@ -136,4 +158,5 @@ requests_quota_size = {
     GET_VIDEO_BY_ID: LIST_REQUEST,
     GET_COMMENTS_BY_VIDEO_ID: LIST_REQUEST,
     GET_CHANNEL_BY_URL: SEARCH_REQUEST + LIST_REQUEST,
+    GET_CHANNEL_BY_VIDEO_ID: LIST_REQUEST + LIST_REQUEST
 }
