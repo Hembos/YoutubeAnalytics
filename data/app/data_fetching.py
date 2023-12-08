@@ -31,7 +31,7 @@ def fetch(db: DataBase):
         try:
             db.reset_api_quota()
 
-            request = db.get_scraper_request()
+            request = db.get_scraper_request(0, 6)
             print(request)
 
             if not request:

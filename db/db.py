@@ -77,8 +77,9 @@ class DataBase:
         query = {"video_id": video_id}
         return self.__db[VIDEOS_COLLECTION_NAME].find_one(query) != None
 
-    def get_scraper_request(self):
-        query = {"completed": False}
+    def get_scraper_request(self, min_type, max_type):
+        query = {"completed": False, "type": {
+            "$gte": min_type, "$lt": max_type + 1}}
         request = self.__db[SCRAPER_REQUESTS].find_one(query)
 
         return request
