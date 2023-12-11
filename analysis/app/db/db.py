@@ -1,3 +1,5 @@
+import datetime
+
 from analysis.app.config import mongodb_ip, mongodb_port, database_name, \
     ssh_connection, ssh_ip, ssh_password, ssh_username
 from pymongo import MongoClient
@@ -7,7 +9,7 @@ import logging
 from datetime import date
 
 from analysis.app.config.collections_names import CHANNELS_COLLECTION_NAME, COMMENTS_COLLECTION_NAME, \
-    VIDEOS_COLLECTION_NAME
+    VIDEOS_COLLECTION_NAME, ANALYSIS_COLLECTION_NAME
 
 
 class DataBase:
@@ -47,3 +49,11 @@ class DataBase:
         for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
             videos[video['video_id']] = video
         return videos
+
+    def save_analysis(self, id, analysis) -> bool:
+          data = {
+              'id': id,
+              'data': analysis,
+              'time': datetime.datetime.utcnow()
+          }
+          self.__db[ANALYSIS_COLLECTION_NAME].update_one(data)

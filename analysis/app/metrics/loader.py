@@ -33,7 +33,13 @@ class Loader:
         all_comments = {}
         for comment in self.channels[channel_id][video_id]['comments']:
             all_comments[comment['id']] = comment
-            # for reply in comment['replies']:
-            #     all_comments[reply['id']] = reply
         return all_comments
+
+    def get_channel_country(self, channel_id:str):
+        if self.db.get_channel(channel_id) is None:
+            self.db.load
+    def load_neg_pos_metric(self, video_id: str):
+        pass
+
+
 
