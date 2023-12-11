@@ -82,5 +82,6 @@ class TestAnalisis(unittest.TestCase):
         loader = Loader([ch_id])
         comments = loader.get_all_comments(ch_id, v_id)
         mets = create_all_metrics(comments, v_id, True)
+
 if __name__ == '__main__':
     unittest.main()

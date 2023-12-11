@@ -1,13 +1,13 @@
-from db.config import mongodb_ip, mongodb_port, database_name, \
-    ssh_connection, ssh_ip, ssh_password, ssh_username
 from pymongo import MongoClient, UpdateOne
-from db.config.collections_names import *
 from sshtunnel import SSHTunnelForwarder
 
 import logging
 
 from datetime import date, datetime
 from time import time
+
+from data.app.db.config import *
+from data.app.db.config.collections_names import *
 
 
 class DataBase:
@@ -121,3 +121,13 @@ class DataBase:
         for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
             videos[video['video_id']] = video
         return videos
+
+    def store_analisis(self, element_id, metric, param):
+        data = {
+            'id': element_id,
+            'metric': metric,
+            'type': param,
+            'updated': datetime.today().isoformat()
+        }
+        return self.__db[ANALYSIS_COLLECTION_NAME].insert_one(data)
+

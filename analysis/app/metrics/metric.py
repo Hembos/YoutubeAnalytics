@@ -58,9 +58,9 @@ def plot_counts_neg_and_pos(comments: dict, video_name: str, make_plot: bool = F
             positive_comments_count += 1
         if entry['sentiment'].output == 'NEU':
             neutral_comments_count += 1
+    labels = ['Positive Comments', 'Negative Comments', 'Neutral Comments']
     sizes = [positive_comments_count, negative_comments_count, neutral_comments_count]
     if make_plot:
-        labels = ['Positive Comments', 'Negative Comments', 'Neutral Comments']
         colors = ['#66ff66', '#ff6666', '#999999']  # Green for positive, red for negative, gray for neutral
         plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
         centre_circle = plt.Circle((0, 0), 0.70, fc='white')
@@ -68,7 +68,7 @@ def plot_counts_neg_and_pos(comments: dict, video_name: str, make_plot: bool = F
         fig.gca().add_artist(centre_circle)
         plt.axis('equal')
         plt.savefig(f'Comments_neg_and_pos_count_of_{video_name}.png')
-    return sizes
+    return dict(zip(labels, sizes))
 
 
 def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False, analyser: Analyser = None):
@@ -91,7 +91,7 @@ def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False
         fig.gca().add_artist(centre_circle)
         plt.axis('equal')
         plt.savefig(f'Comments_neg_and_pos_count_of_{video_name}.png')
-    return sizes
+    return counts
 
 
 def plot_like_vs_replies_counts(comments: dict, video_name: str, make_plot: bool = False):
@@ -112,7 +112,7 @@ def plot_like_vs_replies_counts(comments: dict, video_name: str, make_plot: bool
             plt.xlabel('Reply Count')
             plt.ylabel('Like Count')
             plt.savefig(f'Comments_likes_by_replies{video_name}.png')
-    return reply_count_dict, like_count_dict
+    return {'reply_count':reply_count_dict,'like_count': like_count_dict}
 
 
 def plot_counts_langs(comments: dict, video_name: str, make_plot: bool = False, analyser: Analyser = None):
