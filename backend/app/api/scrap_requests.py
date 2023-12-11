@@ -1,4 +1,5 @@
 import re
+from typing import List
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -108,3 +109,11 @@ async def request_channel_downloading_by_video_url(video_url: str):
 
     result = await scraper_collection.insert_one(request_dict)
     return request_dict
+
+
+@router.get("/requests/")
+async def get_requests(count: int):
+    requests = await scraper_collection.find({}, {"_id": 0}).sort("_id", -1).limit(count).to_list(None)
+    for request in requests:
+        print(request)
+    return requests
