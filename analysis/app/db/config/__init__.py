@@ -1,6 +1,4 @@
-from decouple import Config, RepositoryEnv
-
-config = Config(RepositoryEnv("db/.env"))
+from decouple import config
 
 mongodb_ip = config('MONGODB_IP')
 mongodb_port = config('MONGODB_PORT', cast=int)

@@ -1,0 +1,1 @@
+COMMENTS_SIZE = 7
