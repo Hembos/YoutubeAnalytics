@@ -1,13 +1,19 @@
-from db.config import mongodb_ip, mongodb_port, database_name, \
-    ssh_connection, ssh_ip, ssh_password, ssh_username
+
+import datetime
+
 from pymongo import MongoClient, UpdateOne
-from db.config.collections_names import *
 from sshtunnel import SSHTunnelForwarder
 
 import logging
 
 from datetime import date, datetime
 from time import time
+
+from analysis.app.db.config import ssh_connection, mongodb_port
+from analysis.app.db.config.collections_names import COMMENTS_COLLECTION_NAME, VIDEOS_COLLECTION_NAME, \
+    ANALYSIS_COLLECTION_NAME
+from data.app.db.config import ssh_ip, ssh_username, ssh_password, mongodb_ip, database_name
+from data.app.db.config.collections_names import SCRAPER_REQUESTS
 
 
 class DataBase:
@@ -36,8 +42,8 @@ class DataBase:
 
         logging.info("Close connection")
 
-    def get_comments(self, video_id, projection={"textDisplay": 1}) -> list:
-        return list(self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}, projection=projection))
+    def get_comments(self, video_id) -> list:
+        return list(self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}))
 
     def get_videos(self, channel_id) -> dict:
         videos = {}
@@ -54,3 +60,4 @@ class DataBase:
 
         update_query = {"$set": request}
         return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result["updatedExisting"]
+
