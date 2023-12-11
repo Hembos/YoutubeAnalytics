@@ -119,6 +119,6 @@ class VideoMini(BaseModel):
 
 
 class ChannelMini(BaseModel):
-    channel_id: str
+    id: str
     title: str
     videos: List[VideoMini]

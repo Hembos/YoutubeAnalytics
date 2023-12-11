@@ -19,7 +19,7 @@ async def get_channels():
         return videos
 
     async def populate_videos(channel):
-        channel_id = channel["channel_id"]
+        channel_id = channel["id"]
         videos = await fetch_videos(channel_id)
         channel["videos"] = videos
         return channel
