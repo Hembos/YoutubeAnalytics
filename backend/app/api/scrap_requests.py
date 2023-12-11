@@ -1,6 +1,6 @@
 import re
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.models import ScraperRequests, ScrapData
@@ -97,6 +97,8 @@ async def request_channel_downloading_by_video_url(video_url: str):
     video_id = None
 
     video_id = get_youtube_video_id(video_url)
+    if video_id is None:
+        raise HTTPException(status_code=400, detail="Invalid url")
 
     scrap_data = ScrapData(video_id=video_id)
     scraper_request = ScraperRequests(type=6, tasks_left=1, completed=False, date_completion=None, data=scrap_data)
