@@ -7,6 +7,7 @@ from sshtunnel import SSHTunnelForwarder
 import logging
 
 from datetime import date, datetime
+from time import time
 
 
 class DataBase:
@@ -76,8 +77,9 @@ class DataBase:
         query = {"video_id": video_id}
         return self.__db[VIDEOS_COLLECTION_NAME].find_one(query) != None
 
-    def get_scraper_request(self):
-        query = {"completed": False}
+    def get_scraper_request(self, min_type, max_type):
+        query = {"completed": False, "type": {
+            "$gte": min_type, "$lt": max_type + 1}}
         request = self.__db[SCRAPER_REQUESTS].find_one(query)
 
         return request
@@ -96,6 +98,7 @@ class DataBase:
         return self.__db[SCRAPER_REQUESTS].insert_one(request)
 
     def store_comments(self, comments: dict) -> None:
+        start = time()
         operations = []
         for comment in comments:
             filter_query = {"id": comment["id"]}
@@ -105,3 +108,16 @@ class DataBase:
 
         self.__db[COMMENTS_COLLECTION_NAME].bulk_write(
             operations, ordered=False)
+        print(time() - start)
+
+    def get_comments(self, video_id) -> list:
+        comments = []
+        for comment in self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}):
+            comments.append(comment)
+        return comments
+
+    def get_videos(self, channel_id) -> dict:
+        videos = {}
+        for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
+            videos[video['video_id']] = video
+        return videos

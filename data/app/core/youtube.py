@@ -66,6 +66,20 @@ class Youtube():
 
         return self.get_channel(channel_id)
 
+    def get_channel_by_video_id(self, video_id: str) -> dict:
+        request = self.youtube.videos().list(
+            part="snippet",
+            id=video_id,
+            fields="items(snippet(channelId))",
+            maxResults=1
+        )
+
+        response = request.execute()
+
+        channel_id = response["items"][0]["snippet"]["channelId"]
+
+        return self.get_channel(channel_id)
+
     def get_videos(self, playlist_id: str, page_token: str):
         request = self.youtube.playlistItems().list(
             part="snippet,contentDetails",

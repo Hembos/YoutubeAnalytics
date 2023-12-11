@@ -1,5 +1,7 @@
-from analysis.app.db.db import DataBase
+
 from collections.abc import Callable
+
+from analysis.app.db.db import DataBase
 
 
 class Loader:
@@ -34,12 +36,6 @@ class Loader:
         for comment in self.channels[channel_id][video_id]['comments']:
             all_comments[comment['id']] = comment
         return all_comments
-
-    def get_channel_country(self, channel_id:str):
-        if self.db.get_channel(channel_id) is None:
-            self.db.load
-    def load_neg_pos_metric(self, video_id: str):
-        pass
 
 
 
