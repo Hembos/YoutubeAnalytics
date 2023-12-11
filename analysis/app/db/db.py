@@ -44,3 +44,13 @@ class DataBase:
         for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
             videos[video['video_id']] = video
         return videos
+    
+    def update_scraper_request(self, request: dict):
+        filter_query = {"_id": request["_id"]}
+
+        if request["tasks_left"] <= 0:
+            request["completed"] = True
+            request["date_completion"] = datetime.today().isoformat()
+
+        update_query = {"$set": request}
+        return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result["updatedExisting"]
