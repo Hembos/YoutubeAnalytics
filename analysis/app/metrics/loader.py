@@ -1,4 +1,4 @@
-from analysis.app.db.db import DataBase
+from app.db.db import DataBase
 from collections.abc import Callable
 
 

@@ -1,13 +1,13 @@
-from analysis.app.config import mongodb_ip, mongodb_port, database_name, \
+from db.config import mongodb_ip, mongodb_port, database_name, \
     ssh_connection, ssh_ip, ssh_password, ssh_username
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
+from db.config.collections_names import *
 from sshtunnel import SSHTunnelForwarder
+
 import logging
 
-from datetime import date
-
-from analysis.app.config.collections_names import CHANNELS_COLLECTION_NAME, COMMENTS_COLLECTION_NAME, \
-    VIDEOS_COLLECTION_NAME
+from datetime import date, datetime
+from time import time
 
 
 class DataBase:
@@ -36,11 +36,8 @@ class DataBase:
 
         logging.info("Close connection")
 
-    def get_comments(self, video_id) -> list:
-        comments = []
-        for comment in self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}):
-            comments.append(comment)
-        return comments
+    def get_comments(self, video_id, projection={"textDisplay": 1}) -> list:
+        return list(self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}, projection=projection))
 
     def get_videos(self, channel_id) -> dict:
         videos = {}

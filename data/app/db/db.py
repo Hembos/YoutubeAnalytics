@@ -109,3 +109,15 @@ class DataBase:
         self.__db[COMMENTS_COLLECTION_NAME].bulk_write(
             operations, ordered=False)
         print(time() - start)
+
+    def get_comments(self, video_id) -> list:
+        comments = []
+        for comment in self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}):
+            comments.append(comment)
+        return comments
+
+    def get_videos(self, channel_id) -> dict:
+        videos = {}
+        for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
+            videos[video['video_id']] = video
+        return videos

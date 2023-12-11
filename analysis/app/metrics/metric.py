@@ -1,8 +1,8 @@
 import logging
 
 from collections import defaultdict
-from analysis.app.db.db import DataBase
-from analysis.app.metrics.loader import Loader
+from app.db.db import DataBase
+from app.metrics.loader import Loader
 
 """
 Calculates metric -- number of comments depending on publication time
