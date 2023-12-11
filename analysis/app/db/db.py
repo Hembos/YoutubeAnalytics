@@ -13,6 +13,7 @@ from analysis.app.db.config import ssh_connection, mongodb_port
 from analysis.app.db.config.collections_names import COMMENTS_COLLECTION_NAME, VIDEOS_COLLECTION_NAME, \
     ANALYSIS_COLLECTION_NAME
 from data.app.db.config import ssh_ip, ssh_username, ssh_password, mongodb_ip, database_name
+from data.app.db.config.collections_names import SCRAPER_REQUESTS
 
 
 class DataBase:
@@ -49,4 +50,14 @@ class DataBase:
         for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
             videos[video['video_id']] = video
         return videos
+    
+    def update_scraper_request(self, request: dict):
+        filter_query = {"_id": request["_id"]}
+
+        if request["tasks_left"] <= 0:
+            request["completed"] = True
+            request["date_completion"] = datetime.today().isoformat()
+
+        update_query = {"$set": request}
+        return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result["updatedExisting"]
 
