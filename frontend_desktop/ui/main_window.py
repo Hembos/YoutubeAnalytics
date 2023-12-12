@@ -1,28 +1,22 @@
-from PyQt5.QtWidgets import QMainWindow, QGridLayout, QWidget, QComboBox, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QListWidget, QListWidgetItem, QSplitter
 
 import pyqtgraph as pg
 
-from ui.search_widget import SearchWidget
-from ui.videos_tree import VideosTree
+from ui.download_widget import UrlWidget
+from ui.left_panel import LeftPanel
+from ui.requests_table import RequestsTable
+
+from core.data_updater import DataUpdater
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        self.__main_layout = QGridLayout()
-        
-        self.__search_widget = SearchWidget()
-        
-        self.__videos_tree = VideosTree()
-        
-        self.__statistics_combobox = QComboBox()
-        self.__statistics_combobox.addItem("Graph 1")
-        self.__statistics_combobox.addItem("Graph 2")
-        
-        self.__requests_list = QListWidget()
-        QListWidgetItem("request 1", self.__requests_list)
-        QListWidgetItem("request 2", self.__requests_list)
-        QListWidgetItem("request 3", self.__requests_list)
+        self.__main_layout = QVBoxLayout()
+        self.__url_widget = UrlWidget()
+        self.__data_updater = DataUpdater()
+        self.__left_panel = LeftPanel()
+        self.__requests_table = RequestsTable()
         
         self.__plot_graph = pg.PlotWidget()
         self.__plot_graph.setBackground("w")
@@ -31,13 +25,27 @@ class MainWindow(QMainWindow):
         temperature = [30, 32, 34, 32, 33, 31, 29, 32, 35, 45]
         self.__plot_graph.plot(time, temperature, pen=pen)
         
-        self.__main_layout.addWidget(self.__search_widget, 0, 0, 1, 20)
-        self.__main_layout.addWidget(self.__statistics_combobox, 1, 0, 1, 2)
-        self.__main_layout.addWidget(self.__videos_tree, 2, 0, 18, 2)
-        self.__main_layout.addWidget(self.__plot_graph, 1, 2, 19, 16)
-        self.__main_layout.addWidget(self.__requests_list, 1, 18, 19, 2)
+        self.__left_panel.update_button_click.connect(self.__data_updater.fetch_data)
+        
+        self.__main_layout.addWidget(self.__url_widget)
+        self.__main_layout.addWidget(self.__plot_graph)
+        
+        splitter = QSplitter()
         
         widget = QWidget()
         widget.setLayout(self.__main_layout)
-        self.setCentralWidget(widget)
         
+        splitter.addWidget(self.__left_panel)
+        splitter.addWidget(widget)
+        splitter.addWidget(self.__requests_table)
+        self.setCentralWidget(splitter)
+        
+        self.__data_updater.channels_videos_fetch.connect(
+            self.__left_panel.fill_videos_tree
+        )
+        
+        self.__data_updater.requests_fetch.connect(
+            self.__requests_table.fill
+        )
+        
+        self.__data_updater.fetch_data()
