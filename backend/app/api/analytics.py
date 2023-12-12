@@ -6,7 +6,7 @@ from app.db import requests_collection, collection_analysis
 router = APIRouter()
 
 
-@router.post("/build-video-analytics/")
+@router.post("/build-video-analytics/{video_id}")
 async def build_analytics_by_video_id(video_id: str):
     request = []
     for i in range(7, 14):
@@ -20,7 +20,7 @@ async def build_analytics_by_video_id(video_id: str):
     return request
 
 
-@router.post("/build-channel-analytics/")
+@router.post("/build-channel-analytics/{channel_id}")
 async def build_analytics_by_channel_id(channel_id: str):
     request = []
     for i in range(7, 14):
@@ -34,7 +34,7 @@ async def build_analytics_by_channel_id(channel_id: str):
     return request
 
 
-@router.get("/get-analytics/")
+@router.get("/get-analytics/{type}/{id}")
 async def get_analytics_by_type_and_id(type: int, id: str):
     result = await collection_analysis.find({"type": type, "id": id}).to_list(length=None)
     if len(result) == 1:

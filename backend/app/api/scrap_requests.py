@@ -23,7 +23,7 @@ def get_youtube_video_id(url):
 router = APIRouter()
 
 
-@router.post("/channel-by-category/", response_model=ScrapAnalyseRequests)
+@router.post("/channel-by-category/{category}", response_model=ScrapAnalyseRequests)
 async def request_channel_downloading_by_category(category: str):
     scrap_data = RequestData(category=category)
     scraper_request = ScrapAnalyseRequests(type=0, tasks_left=1, completed=False, date_completion=None, data=scrap_data)
@@ -35,7 +35,7 @@ async def request_channel_downloading_by_category(category: str):
     return request_dict
 
 
-@router.post("/channel-by-id/", response_model=ScrapAnalyseRequests)
+@router.post("/channel-by-id/{channel_id}", response_model=ScrapAnalyseRequests)
 async def request_channel_downloading_by_id(channel_id: str):
     scrap_data = RequestData(channel_id=channel_id)
     scraper_request = ScrapAnalyseRequests(type=1, tasks_left=1, completed=False, date_completion=None, data=scrap_data)
@@ -46,7 +46,7 @@ async def request_channel_downloading_by_id(channel_id: str):
     return request_dict
 
 
-@router.post("/video-by-id/", response_model=ScrapAnalyseRequests)
+@router.post("/video-by-id/{video_id}", response_model=ScrapAnalyseRequests)
 async def request_channel_downloading_by_video_id(video_id: str):
     scrap_data = RequestData(video_id=video_id)
     scraper_request = ScrapAnalyseRequests(type=3, tasks_left=1, completed=False, date_completion=None, data=scrap_data)
@@ -58,7 +58,7 @@ async def request_channel_downloading_by_video_id(video_id: str):
     return request_dict
 
 
-@router.post("/comments-by-video-id/", response_model=ScrapAnalyseRequests)
+@router.post("/comments-by-video-id/{video_id}", response_model=ScrapAnalyseRequests)
 async def request_comments_downloading_by_video_id(video_id: str):
     scrap_data = RequestData(video_id=video_id)
     scraper_request = ScrapAnalyseRequests(type=4, tasks_left=None, completed=False, date_completion=None,
@@ -71,7 +71,7 @@ async def request_comments_downloading_by_video_id(video_id: str):
     return request_dict
 
 
-@router.post("/channel-by-url/", response_model=ScrapAnalyseRequests)
+@router.post("/channel-by-url/{channel_url}", response_model=ScrapAnalyseRequests)
 async def request_channel_downloading_by_url(channel_url: str):
     scrap_data = RequestData(channel_url=channel_url)
     scraper_request = ScrapAnalyseRequests(type=5, tasks_left=1, completed=False, date_completion=None, data=scrap_data)
@@ -83,7 +83,7 @@ async def request_channel_downloading_by_url(channel_url: str):
     return request_dict
 
 
-@router.post("/channel-by-video-url/", response_model=ScrapAnalyseRequests)
+@router.post("/channel-by-video-url/{video_url}", response_model=ScrapAnalyseRequests)
 async def request_channel_downloading_by_video_url(video_url: str):
     video_id = None
 
@@ -101,7 +101,7 @@ async def request_channel_downloading_by_video_url(video_url: str):
     return request_dict
 
 
-@router.get("/requests/")
+@router.get("/requests/{count}")
 async def get_requests(count: int):
     requests = await requests_collection.find({}, {"_id": 0}).sort("_id", -1).limit(count).to_list(None)
     for request in requests:
