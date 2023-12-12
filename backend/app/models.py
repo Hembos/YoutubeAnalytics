@@ -59,6 +59,12 @@ class Video(BaseModel):
 class VideoGroup(BaseModel):
     videos_id: List[str]
 
+class VideoUrl(BaseModel):
+    video_url: str =None
+
+    class Config:
+        allow_population_by_field_name = True
+
 
 class Comments(BaseModel):
     id: str

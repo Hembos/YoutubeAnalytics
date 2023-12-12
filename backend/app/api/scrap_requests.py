@@ -4,7 +4,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.models import ScrapAnalyseRequests, RequestData
+from app.models import ScrapAnalyseRequests, RequestData, VideoUrl
 from app.db import requests_collection
 from app.utils import remove_empty_values
 
@@ -83,10 +83,9 @@ async def request_channel_downloading_by_url(channel_url: str):
     return request_dict
 
 
-@router.post("/channel-by-video-url/{video_url}", response_model=ScrapAnalyseRequests)
-async def request_channel_downloading_by_video_url(video_url: str):
-    video_id = None
-
+@router.post("/channel-by-video-url/", response_model=ScrapAnalyseRequests)
+async def request_channel_downloading_by_video_url(item: VideoUrl):
+    video_url = item.video_url
     video_id = get_youtube_video_id(video_url)
     if video_id is None:
         raise HTTPException(status_code=400, detail="Invalid url")
