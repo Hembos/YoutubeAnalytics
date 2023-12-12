@@ -1,4 +1,3 @@
-from analysis.app.metrics.metric import *
 from data.app.config.quota_size import *
 from data.app.config.requests_types import *
 from data.app.core.youtube import Youtube
@@ -142,46 +141,6 @@ def get_comments_by_video_id(youtube: Youtube, data: dict, db: DataBase) -> None
     data["pageToken"] = next_page_token
 
 
-def get_time_analisis(data: dict, db: DataBase) -> None:
-    channel_id = data['channelId']
-    video_id = data['videoId']
-    comments = data['comments']
-    metric_data_time = plot_counts_by_datetime(comments, video_id)
-    db.store_analisis(video_id, metric_data_time, GET_ANALYSIS_OF_TIME)
-
-
-def get_lang_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
-    channel_id = data['channelId']
-    video_id = data['videoId']
-    comments = data['comments']
-    metric_count_langs = plot_counts_langs(comments, video_id, analyser=analyser)
-    db.store_analisis(video_id, metric_count_langs, GET_ANALYSIS_OF_LANGUAGES)
-
-
-def get_emotion_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
-    channel_id = data['channelId']
-    video_id = data['videoId']
-    comments = data['comments']
-    metric_emotion = plot_counts_emotion(comments, video_id, analyser=analyser)
-    db.store_analisis(video_id, metric_emotion, GET_ANALYSIS_OF_EMOTION)
-
-
-def get_likes_vs_replies_analisis(data: dict, db: DataBase) -> None:
-    channel_id = data['channelId']
-    video_id = data['videoId']
-    comments = data['comments']
-    metric_likes_vs_replies = plot_like_vs_replies_counts(comments, video_id)
-    db.store_analisis(video_id, metric_likes_vs_replies, GET_ANALYSIS_OF_LIKES_VS_REPLIES)
-
-
-def get_neq_pos_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
-    channel_id = data['channelId']
-    video_id = data['videoId']
-    comments = data['comments']
-    metric_neq_pos = plot_counts_neg_and_pos(comments, video_id, analyser=analyser)
-    db.store_analisis(video_id, metric_neq_pos, GET_ANALYSIS_OF_NEQ_POS)
-
-
 requests_func = {
     GET_CHANNELS_BY_CATEGORY: get_channels_by_category,
     GET_CHANNEL_BY_ID: get_channel_by_id,
@@ -190,11 +149,6 @@ requests_func = {
     GET_COMMENTS_BY_VIDEO_ID: get_comments_by_video_id,
     GET_CHANNEL_BY_URL: get_channel_by_url,
     GET_CHANNEL_BY_VIDEO_ID: get_channel_by_video_id,
-    GET_ANALYSIS_OF_TIME: get_time_analisis,
-    GET_ANALYSIS_OF_LANGUAGES: get_lang_analisis,
-    GET_ANALYSIS_OF_EMOTION: get_emotion_analisis,
-    GET_ANALYSIS_OF_LIKES_VS_REPLIES: get_likes_vs_replies_analisis,
-    GET_ANALYSIS_OF_NEQ_POS: get_neq_pos_analisis
 }
 
 requests_quota_size = {

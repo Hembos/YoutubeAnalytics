@@ -1,6 +1,9 @@
 import logging
 from collections import defaultdict
 
+from stop_words import safe_get_stop_words
+from wordcloud import WordCloud
+
 from analysis.app.emotion_analisis.analyser import Analyser
 
 """
@@ -46,8 +49,9 @@ def plot_counts_by_datetime(comments: dict, video_name: str, make_plot: bool = F
 def plot_counts_neg_and_pos(comments: dict, video_name: str, make_plot: bool = False, analyser: Analyser = None):
     if analyser is None:
         analyser = Analyser()
-    if analyser.result is None:
-        analyser.analyse_comments(comments)
+    if analyser.result is None or next(iter(analyser.result.values())).get('sentiment') is None:
+        d_type = {'sentiment': True}
+        analyser.analyse_comments(comments, d_type)
     positive_comments_count = 0
     negative_comments_count = 0
     neutral_comments_count = 0
@@ -74,8 +78,9 @@ def plot_counts_neg_and_pos(comments: dict, video_name: str, make_plot: bool = F
 def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False, analyser: Analyser = None):
     if analyser is None:
         analyser = Analyser()
-    if analyser.result is None:
-        analyser.analyse_comments(comments)
+    if analyser.result is None or next(iter(analyser.result.values())).get('emotion') is None:
+        d_type = {'emotion': True}
+        analyser.analyse_comments(comments, d_type)
     types = ['others', 'joy', 'sadness', 'anger', 'surprise', 'disgust', 'fear']
     counts = dict(zip(types, [0] * len(types)))
     for entry in analyser.result.values():
@@ -90,7 +95,7 @@ def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False
         fig = plt.gcf()
         fig.gca().add_artist(centre_circle)
         plt.axis('equal')
-        plt.savefig(f'Comments_neg_and_pos_count_of_{video_name}.png')
+        plt.savefig(f'Comments_emotion_count_of_{video_name}.png')
     return counts
 
 
@@ -112,14 +117,15 @@ def plot_like_vs_replies_counts(comments: dict, video_name: str, make_plot: bool
             plt.xlabel('Reply Count')
             plt.ylabel('Like Count')
             plt.savefig(f'Comments_likes_by_replies{video_name}.png')
-    return {'reply_count':reply_count_dict,'like_count': like_count_dict}
+    return {'reply_count': reply_count_dict, 'like_count': like_count_dict}
 
 
 def plot_counts_langs(comments: dict, video_name: str, make_plot: bool = False, analyser: Analyser = None):
     if analyser is None:
         analyser = Analyser()
-    if analyser.result is None:
-        analyser.analyse_comments(comments)
+    if analyser.result is None or next(iter(analyser.result.values())).get('lang') is None:
+        d_type = {'lang': True}
+        analyser.analyse_comments(comments, d_type)
     counts = dict()
     for entry in analyser.result.values():
         if entry['lang'][0]['label'] not in counts.keys():
@@ -136,15 +142,51 @@ def plot_counts_langs(comments: dict, video_name: str, make_plot: bool = False, 
         plt.savefig(f'Comments_neg_and_pos_count_of_{video_name}.png')
     return counts
 
-def create_all_metrics(comments: dict, video_name: str, make_plot=False):
-        metric_data_time = plot_counts_by_datetime(comments, video_name, make_plot)
+
+def plot_word_map(comments: dict, video_name: str, make_plot: bool = False, analyser: Analyser = None):
+    if analyser is None:
         analyser = Analyser()
-        metric_count_langs = plot_counts_langs(comments, video_name,make_plot, analyser=analyser)
-        metric_emotion = plot_counts_emotion(comments, video_name,make_plot, analyser)
-        metric_likes_vs_replies = plot_like_vs_replies_counts(comments, video_name,make_plot)
-        metric_neq_pos = plot_counts_neg_and_pos(comments, video_name,make_plot, analyser)
-        return {'metric_data_time':metric_data_time,
-                'metric_count_langs':metric_count_langs,
-                'metric_emotion':metric_emotion,
-                'metric_likes_vs_replies':metric_likes_vs_replies,
-                'metric_neq_pos':metric_neq_pos}
+    if analyser.result is None or \
+            (next(iter(analyser.result.values())).get('lang') is None and analyser.result.get('word_count') is None):
+        d_type = {'lang': True,
+                  'word_count': True}
+        analyser.analyse_comments(comments, d_type)
+    text = analyser.result.pop('word_count')
+    counts = set()
+    for entry in analyser.result.values():
+        if entry['lang'][0]['label'] not in counts:
+            counts.add(entry['lang'][0]['label'])
+    stop_words = []
+    for lang in list(counts):
+        stop_words += safe_get_stop_words(lang)
+    stop_words = set(stop_words)
+    freq = dict()
+    for item in text.keys():
+        if item not in stop_words:
+            freq[item] = text[item]
+    if make_plot:
+        wordcloud = WordCloud(width=2000,
+                              height=1500,
+                              random_state=1,
+                              background_color='black',
+                              relative_scaling=1,
+                              margin=20,
+                              colormap='Pastel1',
+                              collocations=False,
+                              stopwords=stop_words).generate_from_frequencies(freq)
+        wordcloud.to_file(f'Word_cloud_{video_name}.png')
+    return freq
+
+
+def create_all_metrics(comments: dict, video_name: str, make_plot=False):
+    metric_data_time = plot_counts_by_datetime(comments, video_name, make_plot)
+    analyser = Analyser()
+    metric_count_langs = plot_counts_langs(comments, video_name, make_plot, analyser=analyser)
+    metric_emotion = plot_counts_emotion(comments, video_name, make_plot, analyser)
+    metric_likes_vs_replies = plot_like_vs_replies_counts(comments, video_name, make_plot)
+    metric_neq_pos = plot_counts_neg_and_pos(comments, video_name, make_plot, analyser)
+    return {'metric_data_time': metric_data_time,
+            'metric_count_langs': metric_count_langs,
+            'metric_emotion': metric_emotion,
+            'metric_likes_vs_replies': metric_likes_vs_replies,
+            'metric_neq_pos': metric_neq_pos}

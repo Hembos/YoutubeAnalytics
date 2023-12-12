@@ -122,12 +122,3 @@ class DataBase:
             videos[video['video_id']] = video
         return videos
 
-    def store_analisis(self, element_id, metric, param):
-        data = {
-            'id': element_id,
-            'metric': metric,
-            'type': param,
-            'updated': datetime.today().isoformat()
-        }
-        return self.__db[ANALYSIS_COLLECTION_NAME].insert_one(data)
-

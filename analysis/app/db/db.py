@@ -1,4 +1,3 @@
-
 import datetime
 
 from pymongo import MongoClient, UpdateOne
@@ -9,11 +8,8 @@ import logging
 from datetime import date, datetime
 from time import time
 
-from analysis.app.db.config import ssh_connection, mongodb_port
-from analysis.app.db.config.collections_names import COMMENTS_COLLECTION_NAME, VIDEOS_COLLECTION_NAME, \
-    ANALYSIS_COLLECTION_NAME
-from data.app.db.config import ssh_ip, ssh_username, ssh_password, mongodb_ip, database_name
-from data.app.db.config.collections_names import SCRAPER_REQUESTS
+from analysis.app.db.config import *
+from analysis.app.db.config.collections_names import *
 
 
 class DataBase:
@@ -25,7 +21,8 @@ class DataBase:
     def create_connection(self) -> bool:
         if ssh_connection:
             self.__server = SSHTunnelForwarder(ssh_ip, ssh_username=ssh_username,
-                                               ssh_password=ssh_password, remote_bind_address=(mongodb_ip, mongodb_port))
+                                               ssh_password=ssh_password,
+                                               remote_bind_address=(mongodb_ip, mongodb_port))
 
             self.__server.start()
 
@@ -50,7 +47,7 @@ class DataBase:
         for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
             videos[video['video_id']] = video
         return videos
-    
+
     def update_scraper_request(self, request: dict):
         filter_query = {"_id": request["_id"]}
 
@@ -59,5 +56,30 @@ class DataBase:
             request["date_completion"] = datetime.today().isoformat()
 
         update_query = {"$set": request}
-        return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result["updatedExisting"]
+        return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result[
+            "updatedExisting"]
 
+    def get_scraper_request(self, low_bound, upper_bound):
+
+        return self.__db[SCRAPER_REQUESTS].find_one(
+            {'type': {'$gte': low_bound, '$lte': upper_bound}, 'completed': False})
+
+    def store_analisis(self, element_id, metric, param):
+        data = {
+            'id': element_id,
+            'metric': metric,
+            'type': param,
+            'updated': datetime.today().isoformat()
+        }
+        filter_query = {"id": element_id, "type": param}
+        update_query = {"$set": data}
+        return self.__db[ANALYSIS_COLLECTION_NAME].update_one(filter_query, update_query, upsert=True).raw_result[
+            "updatedExisting"]
+
+    def is_channel_exists(self, channel_id: str):
+        query = {"channel_id": channel_id}
+        return self.__db[CHANNELS_COLLECTION_NAME].find_one(query) is not None
+
+    def is_video_exists(self, video_id: str):
+        query = {"video_id": video_id}
+        return self.__db[VIDEOS_COLLECTION_NAME].find_one(query) is not None

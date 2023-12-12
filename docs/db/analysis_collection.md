@@ -15,4 +15,4 @@
 * 10 -- Dictionary with two keys: reply and like counts, and values: dictionaries with keys: comments ids and values: counts
 * 11 -- Dictionary with three keys: positive, negative and neutral, and values: counts
 * 12 -- Number: special metric
-* 13 -- WordCloud as numby  array 
+* 13 -- WordCloud as numpy  array 

@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from analysis.app.emotion_analisis.analyser import Analyser
 from analysis.app.metrics.loader import Loader
 from analysis.app.metrics.metric import plot_counts_by_datetime, plot_counts_neg_and_pos, plot_counts_emotion, \
-    plot_like_vs_replies_counts, plot_counts_langs, create_all_metrics
+    plot_like_vs_replies_counts, plot_counts_langs, create_all_metrics, plot_word_map
 
 
 class TestAnalisis(unittest.TestCase):
@@ -22,15 +22,15 @@ class TestAnalisis(unittest.TestCase):
         plot_counts_by_datetime(comments, test_video_id)
 
     def test_plot_pos_neg_count(self):
-        test_video_id = 'q_ve9SsuyvU'
-        test_channel_id = 'UCzdmz_lLWT_dPqOvFjXAMVg'
+        test_video_id = 'g_sA8hYU3b8'
+        test_channel_id = 'UConVfxXodg78Tzh5nNu85Ew'
         loader = Loader([test_channel_id])
         comments = loader.get_all_comments(test_channel_id, test_video_id)
         plot_counts_neg_and_pos(comments, test_video_id, make_plot=True)
 
     def test_plot_emotion(self):
-        test_video_id = 'q_ve9SsuyvU'
-        test_channel_id = 'UCzdmz_lLWT_dPqOvFjXAMVg'
+        test_video_id = 'g_sA8hYU3b8'
+        test_channel_id = 'UConVfxXodg78Tzh5nNu85Ew'
         loader = Loader([test_channel_id])
         comments = loader.get_all_comments(test_channel_id, test_video_id)
         plot_counts_emotion(comments, test_video_id, make_plot=True)
@@ -83,5 +83,11 @@ class TestAnalisis(unittest.TestCase):
         comments = loader.get_all_comments(ch_id, v_id)
         mets = create_all_metrics(comments, v_id, True)
 
+    def test_word_cloud(self):
+        v_id = 'g_sA8hYU3b8'
+        ch_id = 'UConVfxXodg78Tzh5nNu85Ew'
+        loader = Loader([ch_id])
+        comments = loader.get_all_comments(ch_id, v_id)
+        wc = plot_word_map(comments, v_id, True)
 if __name__ == '__main__':
     unittest.main()
