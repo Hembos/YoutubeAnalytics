@@ -1,5 +1,7 @@
-from app.db.db import DataBase
+
 from collections.abc import Callable
+
+from analysis.app.db.db import DataBase
 
 
 class Loader:
@@ -33,7 +35,7 @@ class Loader:
         all_comments = {}
         for comment in self.channels[channel_id][video_id]['comments']:
             all_comments[comment['id']] = comment
-            # for reply in comment['replies']:
-            #     all_comments[reply['id']] = reply
         return all_comments
+
+
 
