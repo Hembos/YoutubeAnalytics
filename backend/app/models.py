@@ -80,7 +80,7 @@ class Comments(BaseModel):
         allow_population_by_field_name = True
 
 
-class ScrapData(BaseModel):
+class RequestData(BaseModel):
     channel_id: str = None
     channel_url: str = None
     category: str = None
@@ -92,15 +92,16 @@ class ScrapData(BaseModel):
         allow_population_by_field_name = True
 
 
-class ScraperRequests(BaseModel):
+class ScrapAnalyseRequests(BaseModel):
     type: int
     tasks_left: int
     completed: bool
     date_completion: Optional[datetime]
-    data: ScrapData
+    data: RequestData
 
     class Config:
         allow_population_by_field_name = True
+
 
 
 class User(BaseModel):
