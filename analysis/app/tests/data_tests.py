@@ -1,9 +1,9 @@
 import unittest
 
-from analysis.app.emotion_analisis.analyser import Analyser
-from analysis.app.metrics.loader import Loader
-from analysis.app.requests_func import *
-from data.app.db.db import DataBase
+from emotion_analisis.analyser import Analyser
+from metrics.loader import Loader
+from requests_func import *
+from db.db import DataBase
 
 
 class TestLoading(unittest.TestCase):
