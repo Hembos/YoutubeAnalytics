@@ -1,24 +1,18 @@
 from PyQt5.QtWidgets import QApplication, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 
 class VideosTree(QWidget):
+    item_select = pyqtSignal(str, bool)
+    
     def __init__(self):
         super().__init__()
         
         self.__tree = QTreeWidget(self)
         self.__tree.setHeaderHidden(True)
-
-        rootItem = QTreeWidgetItem(self.__tree)
-        rootItem.setText(0, 'Channel 1')
-
-        # Add child items to the root
-        child1 = QTreeWidgetItem(rootItem)
-        child1.setText(0, 'Video 1')
-
-        child2 = QTreeWidgetItem(rootItem)
-        child2.setText(0, 'Video 2')
         
+        self.__tree.currentItemChanged.connect(self.current_item_change)
+
         self.__layout = QVBoxLayout()
         self.setLayout(self.__layout)
         self.__layout.addWidget(self.__tree)
@@ -37,3 +31,24 @@ class VideosTree(QWidget):
                 videoItem = QTreeWidgetItem(channelItem)
                 videoItem.setText(0, video["title"])
                 videoItem.setData(0, Qt.ItemDataRole.UserRole, video["video_id"])
+    
+    def get_current_id(self) -> (str, bool):
+        cur_item = self.__tree.currentItem()
+        if cur_item is None:
+            return ('', True)
+        
+        is_channel = False
+
+        if cur_item.parent() == self.__tree.itemFromIndex(self.__tree.rootIndex()):
+            is_channel = True
+            
+        return (cur_item.data(0, Qt.ItemDataRole.UserRole), is_channel)
+    
+    def current_item_change(self, cur: QTreeWidgetItem, prev: QTreeWidgetItem) -> None:
+        is_channel = False
+        
+        if cur.parent() == self.__tree.itemFromIndex(self.__tree.rootIndex()):
+            is_channel = True
+            
+        self.item_select.emit(cur.data(0, Qt.ItemDataRole.UserRole), is_channel)
+        

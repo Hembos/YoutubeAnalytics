@@ -1,9 +1,9 @@
-from data.app.config.quota_size import *
-from data.app.config.requests_types import *
-from data.app.core.youtube import Youtube
+from config.quota_size import *
+from config.requests_types import *
+from core.youtube import Youtube
 from math import ceil
 
-from data.app.db.db import DataBase
+from db.db import DataBase
 
 
 def get_channels_by_category(youtube: Youtube, data: dict, db: DataBase) -> None:

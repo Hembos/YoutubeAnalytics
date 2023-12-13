@@ -6,8 +6,8 @@ import logging
 from datetime import date, datetime
 from time import time
 
-from data.app.db.config import *
-from data.app.db.config.collections_names import *
+from db.config import *
+from db.config.collections_names import *
 
 
 class DataBase:

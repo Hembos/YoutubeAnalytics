@@ -1,0 +1,38 @@
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt5.QtGui import QPixmap, QImage
+from wordcloud import WordCloud
+from PIL import Image, ImageQt
+
+
+class WordMap(QWidget):
+    def __init__(self, parent: QWidget | None = None, flags: Qt.WindowFlags = Qt.WindowFlags()) -> None:
+        super().__init__(parent, flags)
+        
+        self.__word_map_pos = QLabel()
+        self.__word_map_neg = QLabel()
+        
+        layout = QVBoxLayout()
+        layout.addWidget(self.__word_map_pos)
+        layout.addWidget(self.__word_map_neg)
+        self.setLayout(layout)
+        
+    def create_word_map(self, freq: dict) -> QPixmap:
+        if "video" in freq:
+            freq.pop("video")
+        if "emoji" in freq:
+            freq.pop("emoji")
+            
+        wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(freq)
+
+        pil_img = wordcloud.to_image()
+        qim = QImage(pil_img.tobytes('raw', "RGBA"), 800, 400, QImage.Format.Format_RGBA8888)
+
+        return QPixmap.fromImage(qim)
+
+    def draw(self, data: dict) -> None:
+        pos = data["pos_freq"]
+        neg = data["neg_freq"]
+
+        self.__word_map_pos.setPixmap(self.create_word_map(pos))
+        self.__word_map_neg.setPixmap(self.create_word_map(neg))
