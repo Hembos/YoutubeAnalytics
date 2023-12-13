@@ -46,7 +46,7 @@ def fetch(db: DataBase):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO,
-                        filename="data/data.log", format="%(asctime)s %(levelname)s %(message)s")
+                        filename="data.log", format="%(asctime)s %(levelname)s %(message)s")
 
     print("To exit the application, press Ctrl-c")
 
