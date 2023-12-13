@@ -5,7 +5,7 @@ from collections import defaultdict
 from stop_words import safe_get_stop_words
 from wordcloud import WordCloud
 
-from app.emotion_analisis.analyser import Analyser
+from emotion_analisis.analyser import Analyser
 import numpy as np
 """
 Calculates metric -- number of comments depending on publication time

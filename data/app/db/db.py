@@ -17,14 +17,17 @@ class DataBase:
         self.__db = None
 
     def create_connection(self) -> bool:
+        port = mongodb_port
         if ssh_connection:
             self.__server = SSHTunnelForwarder(ssh_ip, ssh_username=ssh_username,
                                                ssh_password=ssh_password, remote_bind_address=(mongodb_ip, mongodb_port))
 
             self.__server.start()
+            
+            port = self.__server.local_bind_port
 
         self.__db_connection = MongoClient(
-            mongodb_ip, self.__server.local_bind_port)
+            mongodb_ip, port)
         self.__db = self.__db_connection[database_name]
 
     def close_connection(self) -> None:
