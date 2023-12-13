@@ -37,3 +37,4 @@ class RequestsTable(QTableWidget):
             self.setItem(row, 2, data)
             
         self.resizeColumnsToContents()
+        self.setColumnWidth(2, 100)

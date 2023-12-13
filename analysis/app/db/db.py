@@ -8,8 +8,8 @@ import logging
 from datetime import date, datetime
 from time import time
 
-from analysis.app.db.config import *
-from analysis.app.db.config.collections_names import *
+from db.config import *
+from db.config.collections_names import *
 
 
 class DataBase:
@@ -47,6 +47,9 @@ class DataBase:
         for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
             videos[video['video_id']] = video
         return videos
+
+    def get_video(self, video_id:str) -> dict:
+        return dict(self.__db[VIDEOS_COLLECTION_NAME].find_one({"video_id": video_id}))
 
     def update_scraper_request(self, request: dict):
         filter_query = {"_id": request["_id"]}

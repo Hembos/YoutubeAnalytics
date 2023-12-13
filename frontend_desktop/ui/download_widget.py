@@ -3,8 +3,10 @@ from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QLabel, QPushButton
 
 
 class UrlWidget(QWidget):
-    def __init__(self, parent: QWidget | None = None, flags: Qt.WindowFlags | Qt.WindowType = Qt.WindowFlags()) -> None:
-        super().__init__(parent, flags)
+    download = pyqtSignal(str)
+    
+    def __init__(self, flags: Qt.WindowFlags = Qt.WindowFlags()) -> None:
+        super().__init__(None, flags)
 
         self.__layout = QHBoxLayout()
         self.setLayout(self.__layout)
@@ -13,8 +15,14 @@ class UrlWidget(QWidget):
 
         self.__url_line_edit = QLineEdit()
         self.__download_button = QPushButton("Скачать")
-        self.__analyze_button = QPushButton("Проанализировать")
+        self.__download_button.clicked.connect(self.download_clicked)
 
         self.__layout.addWidget(self.__url_line_edit)
         self.__layout.addWidget(self.__download_button)
-        self.__layout.addWidget(self.__analyze_button)
+
+    def download_clicked(self) -> None:
+        url = self.__url_line_edit.text()
+        if url == '':
+            return
+
+        self.download.emit(url)

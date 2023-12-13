@@ -2,10 +2,10 @@ import unittest
 
 from matplotlib import pyplot as plt
 
-from analysis.app.emotion_analisis.analyser import Analyser
-from analysis.app.metrics.loader import Loader
-from analysis.app.metrics.metric import plot_counts_by_datetime, plot_counts_neg_and_pos, plot_counts_emotion, \
-    plot_like_vs_replies_counts, plot_counts_langs, create_all_metrics, plot_word_map
+from app.emotion_analisis.analyser import Analyser
+from app.metrics.loader import Loader
+
+from app.metrics.metric import *
 
 
 class TestAnalisis(unittest.TestCase):
@@ -89,5 +89,12 @@ class TestAnalisis(unittest.TestCase):
         loader = Loader([ch_id])
         comments = loader.get_all_comments(ch_id, v_id)
         wc = plot_word_map(comments, v_id, True)
+    def test_popularity(self):
+        v_id = 'g_sA8hYU3b8'
+        ch_id = 'UConVfxXodg78Tzh5nNu85Ew'
+        loader = Loader([ch_id])
+        comments = loader.get_all_comments(ch_id, v_id)
+        video = loader.load_video(v_id)
+        mts = create_popularity_metrics(comments, video, v_id,print_metrics=True)
 if __name__ == '__main__':
     unittest.main()

@@ -1,7 +1,7 @@
 
 from collections.abc import Callable
 
-from analysis.app.db.db import DataBase
+from db.db import DataBase
 
 
 class Loader:
@@ -52,12 +52,13 @@ class Loader:
         if self._is_test:
             self.db.create_connection()
         if video_id in self.videos:
-            return True
+            return self.videos[video_id]
         self.videos[video_id] = dict()
+        self.videos[video_id] = self.db.get_video(video_id)
         self.videos[video_id]['comments'] = self.db.get_comments(video_id)
         if self._is_test:
             self.db.close_connection()
-        return False
+        return  self.videos[video_id]
 
     def get_data_comments(self, channel_id, video_id):
         comments = []
@@ -69,6 +70,12 @@ class Loader:
         for comment in comments:
             all_comments[comment['id']] = comment
         return all_comments
+
+    def get_video_info(self, video_id, channel_id):
+        self.load_video(video_id)
+        if self.videos.get(video_id) is None:
+            return self.channels.get(channel_id).get(video_id)
+        return self.videos[video_id]
 
 
 
