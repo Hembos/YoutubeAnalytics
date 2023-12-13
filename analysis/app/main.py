@@ -1,8 +1,8 @@
 import time
 
-from analysis.app.db.db import DataBase
-from analysis.app.emotion_analisis.analyser import Analyser
-from analysis.app.metrics.loader import Loader
+from db.db import DataBase
+from emotion_analisis.analyser import Analyser
+from metrics.loader import Loader
 
 from requests_func import requests_func
 
@@ -31,7 +31,8 @@ def process(db: DataBase):
         data = {
             'channelId': channel_id,
             'videoId': video_id,
-            'comments': loader.get_data_comments(channel_id, video_id)
+            'comments': loader.get_data_comments(channel_id, video_id),
+            'video_info': loader.get_video_info(video_id, channel_id)
         }
         print(request)
         start_time = time.time()

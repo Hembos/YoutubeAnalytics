@@ -1,6 +1,6 @@
-from analysis.app.config.requests_types import *
-from analysis.app.db.db import DataBase
-from analysis.app.metrics.metric import *
+from config.requests_types import *
+from db.db import DataBase
+from metrics.metric import *
 
 
 def get_time_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
@@ -52,8 +52,12 @@ def get_word_map(data: dict, db: DataBase, analyser: Analyser) -> None:
 
 
 def get_popularity_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
-    pass
-
+    channel_id = data['channelId']
+    video_id = data['videoId']
+    comments = data['comments']
+    video_info = data['video_info']
+    popularity = create_popularity_metrics(comments,video_info, video_id, comments, analyser)
+    db.store_analisis(video_id, popularity, GET_POPULARITY)
 
 requests_func = {
     GET_ANALYSIS_OF_TIME: get_time_analisis,
