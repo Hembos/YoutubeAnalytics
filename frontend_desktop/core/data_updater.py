@@ -8,8 +8,8 @@ class DataUpdater(QObject):
     requests_fetch = pyqtSignal(list)
     analytic_fetch = pyqtSignal(dict)
 
-    def __init__(self, parent: QObject | None = None) -> None:
-        super().__init__(parent)
+    def __init__(self) -> None:
+        super().__init__(None)
 
     def fetch_data(self):
         channels_response = requests.get(f'{API_URL}channels/')

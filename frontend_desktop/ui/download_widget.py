@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QLabel, QPushButton
 class UrlWidget(QWidget):
     download = pyqtSignal(str)
     
-    def __init__(self, parent: QWidget | None = None, flags: Qt.WindowFlags | Qt.WindowType = Qt.WindowFlags()) -> None:
-        super().__init__(parent, flags)
+    def __init__(self, flags: Qt.WindowFlags = Qt.WindowFlags()) -> None:
+        super().__init__(None, flags)
 
         self.__layout = QHBoxLayout()
         self.setLayout(self.__layout)
