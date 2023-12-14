@@ -10,8 +10,8 @@ class LeftPanel(QWidget):
     analyze = pyqtSignal(str, bool)
     analytics = pyqtSignal(str, bool)
     
-    def __init__(self, parent: QWidget | None = None, flags: Qt.WindowFlags = Qt.WindowFlags()) -> None:
-        super().__init__(parent, flags)
+    def __init__(self, flags: Qt.WindowFlags = Qt.WindowFlags()) -> None:
+        super().__init__(None, flags)
         
         self.__statistics_combobox = QComboBox()
 

@@ -1,7 +1,7 @@
 
 from collections.abc import Callable
 
-from app.db.db import DataBase
+from db.db import DataBase
 
 
 class Loader:

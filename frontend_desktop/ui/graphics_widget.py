@@ -11,8 +11,8 @@ from config import GET_ANALYSIS_OF_TIME, GET_ANALYSIS_OF_LANGUAGES,\
 
 
 class GraphicsWidget(QStackedWidget):
-    def __init__(self, parent: QWidget | None = None) -> None:
-        super().__init__(parent)
+    def __init__(self) -> None:
+        super().__init__(None)
 
         self.__comments_by_time = CommentsByTime()
         self.__comments_by_lang = CommentsByLang()

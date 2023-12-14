@@ -6,8 +6,8 @@ from PIL import Image, ImageQt
 
 
 class WordMap(QWidget):
-    def __init__(self, parent: QWidget | None = None, flags: Qt.WindowFlags = Qt.WindowFlags()) -> None:
-        super().__init__(parent, flags)
+    def __init__(self, flags: Qt.WindowFlags = Qt.WindowFlags()) -> None:
+        super().__init__(None, flags)
         
         self.__word_map_pos = QLabel()
         self.__word_map_neg = QLabel()
