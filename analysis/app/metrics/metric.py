@@ -111,8 +111,8 @@ def plot_like_vs_replies_counts(comments: dict, video_name: str, make_plot: bool
         is_reply = comment_info.get('isReply', False)
         # like_count = comment_info.get('likeCount', 0)
         parent_id = comment_info.get('parentId', None)
-        if is_reply:
-            reply_count_dict[parent_id] += 1
+        reply_count = comment_info.get('totalReplyCount',0)
+        reply_count_dict[comment_id] += reply_count
     for comment_id in reply_count_dict.keys():
         like_count_dict[comment_id] = comments[comment_id].get('likeCount', 0)
     reply_counts = list(reply_count_dict.values())
