@@ -28,6 +28,7 @@ def process(db: DataBase):
             loader.load_video(video_id)
         if channel_id and check_channel(channel_id, db):
             loader.load_channel(channel_id)
+        db.pre_update_request(request)
         data = {
             'channelId': channel_id,
             'videoId': video_id,

@@ -62,6 +62,14 @@ class DataBase:
         return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result[
             "updatedExisting"]
 
+    def pre_update_request(self, request: dict):
+        filter_query = {"_id": request["_id"]}
+
+        request["completed"] = True
+
+        update_query = {"$set": request}
+        return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result[
+            "updatedExisting"]
     def get_scraper_request(self, low_bound, upper_bound):
 
         return self.__db[SCRAPER_REQUESTS].find_one(
