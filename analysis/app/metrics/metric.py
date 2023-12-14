@@ -109,14 +109,15 @@ def plot_like_vs_replies_counts(comments: dict, video_name: str, make_plot: bool
     like_count_dict = defaultdict(int)
     for comment_id, comment_info in comments.items():
         is_reply = comment_info.get('isReply', False)
-        like_count = comment_info.get('likeCount', 0)
+        # like_count = comment_info.get('likeCount', 0)
         parent_id = comment_info.get('parentId', None)
         if is_reply:
             reply_count_dict[parent_id] += 1
-            like_count_dict[parent_id] = like_count
-        reply_counts = list(reply_count_dict.values())
-        like_counts = list(like_count_dict.values())
-        if make_plot:
+    for comment_id in reply_count_dict.keys():
+        like_count_dict[comment_id] = comments[comment_id].get('likeCount', 0)
+    reply_counts = list(reply_count_dict.values())
+    like_counts = list(like_count_dict.values())
+    if make_plot:
             plt.scatter(reply_counts, like_counts, color='blue', alpha=0.5)
             plt.title(f'Like Count vs Reply Count {video_name}')
             plt.xlabel('Reply Count')
@@ -244,7 +245,7 @@ def create_popularity_metrics(comments: dict,video_info:dict, video_name: str, a
         derivatives = [1.0 / deltas[i] for i in
                        range(len(cumulative_counts) - 1)]
         counts_coeff = np.log2(derivatives) if comments_size == 1 else 1
-        comments_time_comp = np.mean(derivatives[-counts_coeff])
+        comments_time_comp = np.mean(derivatives[:-counts_coeff])
         if comments_time_comp < 1:
             comments_time_comp = 1
     spam = 1+np.abs(comments_count - comments_size)/(max(comments_count, comments_size))
