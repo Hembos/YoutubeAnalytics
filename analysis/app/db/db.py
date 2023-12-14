@@ -8,8 +8,10 @@ import logging
 from datetime import date, datetime
 from time import time
 
-from db.config import *
-from db.config.collections_names import *
+from app.db.config import *
+from app.db.config.collections_names import *
+
+from app.db.config.collections_names import *
 
 
 class DataBase:
@@ -94,3 +96,17 @@ class DataBase:
     def is_video_exists(self, video_id: str):
         query = {"video_id": video_id}
         return self.__db[VIDEOS_COLLECTION_NAME].find_one(query) is not None
+
+    def get_all_metrics(self, metric_type):
+        list(self.__db[ANALYSIS_COLLECTION_NAME].find({"type": metric_type }))
+
+    def get_metric(self, video_id, metric_type):
+        # todo fix
+        if self.is_video_exists(video_id):
+            d = dict(self.__db[ANALYSIS_COLLECTION_NAME].find_one({"type": metric_type, "id": video_id}))
+            d = d.get('metric',{})
+        else:
+            d = [[],[]]
+        if isinstance(d, list):
+            d = {"0":d[0],"1":d[1]}
+        return d

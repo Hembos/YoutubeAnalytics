@@ -11,7 +11,7 @@ def check_video(video_id, db: DataBase) -> bool:
     return db.is_video_exists(video_id)
 
 
-def check_channel(channel_id:str, db: DataBase) -> bool:
+def check_channel(channel_id: str, db: DataBase) -> bool:
     return db.is_channel_exists(channel_id)
 
 
@@ -46,11 +46,13 @@ def process(db: DataBase):
 
 
 if __name__ == "__main__":
-    print("To exit the application, press Ctrl-c")
+    print("Analyser started")
 
     db = DataBase()
     db.create_connection()
-
-    process(db)
-
+    while True:
+        try:
+            process(db)
+        except:
+            continue
     db.close_connection()

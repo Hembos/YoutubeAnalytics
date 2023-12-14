@@ -1,13 +1,14 @@
 
 from collections.abc import Callable
 
-from db.db import DataBase
+from app.db.db import DataBase
 
 
 class Loader:
     def __init__(self, channel_ids: list = None, db: DataBase = None):
         self.channels = {}
         self.videos = {}
+        self.metrics = {}
         self._is_test = False
         if db is None:
             self.db = DataBase()
@@ -76,6 +77,17 @@ class Loader:
         if self.videos.get(video_id) is None:
             return self.channels.get(channel_id).get(video_id)
         return self.videos[video_id]
+
+    def load_metric(self, metric_type,channel_id, video_id):
+        if self.metrics.get(channel_id) is None:
+            self.metrics[channel_id] = dict()
+        if self.metrics[channel_id].get(video_id) is None:
+            self.metrics[channel_id][video_id] = dict()
+        if self.metrics[channel_id][video_id].get(metric_type):
+            return True
+        self.metrics[channel_id][metric_type] = self.db.get_metric(video_id, metric_type)
+        return False
+
 
 
 
