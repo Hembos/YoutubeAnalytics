@@ -166,8 +166,9 @@ def plot_word_map(comments: dict, video_name: str, make_plot: bool = False, anal
     pos_freq = defaultdict(int)
     neg_freq = defaultdict(int)
     freq = defaultdict(int)
-    for entry in analyser.result.values():
-        sentance = entry['sentiment'].sentence
+    for key in analyser.result.keys():
+        entry = analyser.result[key]
+        sentance = comments[key].get('textOriginal', '')
         words = "".join(c for c in sentance if c.isalnum() or c.isspace())
         words = words.lower().split()
         for word in words:
