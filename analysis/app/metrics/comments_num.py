@@ -1,4 +1,4 @@
-from db.db import DataBase
+from app.db.db import DataBase
 from numpy import ndarray
 
 

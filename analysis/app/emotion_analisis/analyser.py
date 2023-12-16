@@ -36,8 +36,8 @@ class Analyser:
             # todo add translation
             text = entry['textOriginal']
             ans = dict()
-            if len(text) > 200:
-                text = text[:200]
+            if len(text) > 400:
+                text = text[:400]
             if analysis_types.get('lang') is not None:
                 lang = self.recognise_lang(text)
                 ans['lang'] = lang

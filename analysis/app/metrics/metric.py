@@ -5,8 +5,11 @@ from collections import defaultdict
 from stop_words import safe_get_stop_words
 from wordcloud import WordCloud
 
-from emotion_analisis.analyser import Analyser
+from app.emotion_analisis.analyser import Analyser
 import numpy as np
+
+from app.metrics.plots import *
+
 """
 Calculates metric -- number of comments depending on publication time
 """
@@ -25,7 +28,6 @@ def plot_counts_by_datetime(comments: dict, video_name: str, make_plot: bool = F
 
     # Sort the entries by datetime
     sorted_counts = sorted(datetime_counts.items(), key=lambda x: x[0])
-
     # Extract datetime and cumulative counts
     datetimes = [date for date, _ in sorted_counts]
     counts = [count for _, count in sorted_counts]
@@ -33,17 +35,7 @@ def plot_counts_by_datetime(comments: dict, video_name: str, make_plot: bool = F
     # Perform cumulative sum for the counts
     cumulative_counts = [sum(counts[:i + 1]) for i in range(len(counts))]
     if make_plot:
-        plt.figure(figsize=(12, 6))
-        plt.plot(datetimes, cumulative_counts, marker='o', linestyle='-')
-        plt.xlabel('Date and Time')
-        plt.ylabel('Count of comments')
-        plt.title(f'Count of comments {video_name}')
-        plt.xticks(rotation=45)
-        plt.grid(True)
-        plt.tight_layout()
-        logging.basicConfig(level=logging.INFO,
-                            filename="analysis/analysis.log", format="%(asctime)s %(levelname)s %(message)s")
-        plt.savefig(f'Comments_count_of_{video_name}.png')
+        graph_counts_by_datetime(datetimes, cumulative_counts, video_name)
     if return_count:
         return [datetimes, counts]
     return [datetimes, cumulative_counts]
@@ -69,13 +61,8 @@ def plot_counts_neg_and_pos(comments: dict, video_name: str, make_plot: bool = F
     labels = ['Positive Comments', 'Negative Comments', 'Neutral Comments']
     sizes = [positive_comments_count, negative_comments_count, neutral_comments_count]
     if make_plot:
-        colors = ['#66ff66', '#ff6666', '#999999']  # Green for positive, red for negative, gray for neutral
-        plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-        fig = plt.gcf()
-        fig.gca().add_artist(centre_circle)
-        plt.axis('equal')
-        plt.savefig(f'Comments_neg_and_pos_count_of_{video_name}.png')
+        graph_counts_neg_and_pos(sizes, labels, video_name)
+
     return dict(zip(labels, sizes))
 
 
@@ -94,13 +81,7 @@ def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False
                 counts[t] += 1
     sizes = [i for i in counts.values()]
     if make_plot:
-        labels = types
-        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-        fig = plt.gcf()
-        fig.gca().add_artist(centre_circle)
-        plt.axis('equal')
-        plt.savefig(f'Comments_emotion_count_of_{video_name}.png')
+        graph_counts_emotion(types, sizes, video_name)
     return counts
 
 
@@ -109,19 +90,16 @@ def plot_like_vs_replies_counts(comments: dict, video_name: str, make_plot: bool
     like_count_dict = defaultdict(int)
     for comment_id, comment_info in comments.items():
         is_reply = comment_info.get('isReply', False)
-        like_count = comment_info.get('likeCount', 0)
+        # like_count = comment_info.get('likeCount', 0)
         parent_id = comment_info.get('parentId', None)
-        if is_reply:
-            reply_count_dict[parent_id] += 1
-            like_count_dict[parent_id] = like_count
-        reply_counts = list(reply_count_dict.values())
-        like_counts = list(like_count_dict.values())
-        if make_plot:
-            plt.scatter(reply_counts, like_counts, color='blue', alpha=0.5)
-            plt.title(f'Like Count vs Reply Count {video_name}')
-            plt.xlabel('Reply Count')
-            plt.ylabel('Like Count')
-            plt.savefig(f'Comments_likes_by_replies{video_name}.png')
+        reply_count = comment_info.get('totalReplyCount',0)
+        reply_count_dict[comment_id] += reply_count
+    for comment_id in reply_count_dict.keys():
+        like_count_dict[comment_id] = comments[comment_id].get('likeCount', 0)
+    reply_counts = list(reply_count_dict.values())
+    like_counts = list(like_count_dict.values())
+    if make_plot:
+        graph_like_vs_replies_counts(reply_counts, like_counts, video_name)
     return {'reply_count': reply_count_dict, 'like_count': like_count_dict}
 
 
@@ -138,14 +116,9 @@ def plot_counts_langs(comments: dict, video_name: str, make_plot: bool = False, 
             counts[entry['lang'][0]['label']] = 0
         counts[entry['lang'][0]['label']] += 1
     sizes = [i for i in counts.values()]
+    labels = list(counts.keys())
     if make_plot:
-        labels = list(counts.keys())
-        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-        centre_circle = plt.Circle((0, 0), 0.70, fc='white')
-        fig = plt.gcf()
-        fig.gca().add_artist(centre_circle)
-        plt.axis('equal')
-        plt.savefig(f'Comments_neg_and_pos_count_of_{video_name}.png')
+        graph_count_langs(sizes, labels, video_name)
     return counts
 
 
@@ -165,8 +138,9 @@ def plot_word_map(comments: dict, video_name: str, make_plot: bool = False, anal
     pos_freq = defaultdict(int)
     neg_freq = defaultdict(int)
     freq = defaultdict(int)
-    for entry in analyser.result.values():
-        sentance = entry['sentiment'].sentence
+    for key in analyser.result.keys():
+        entry = analyser.result[key]
+        sentance = comments[key].get('textOriginal', '')
         words = "".join(c for c in sentance if c.isalnum() or c.isspace())
         words = words.lower().split()
         for word in words:
@@ -191,36 +165,7 @@ def plot_word_map(comments: dict, video_name: str, make_plot: bool = False, anal
             if item in neg_freq.keys():
                 del neg_freq[item]
     if make_plot:
-        wordcloud = WordCloud(width=2000,
-                              height=1500,
-                              random_state=1,
-                              background_color='black',
-                              relative_scaling=1,
-                              margin=20,
-                              colormap='Pastel1',
-                              collocations=False,
-                              stopwords=stop_words).generate_from_frequencies(freq)
-        wordcloud.to_file(f'Word_cloud_all_{video_name}.png')
-        wordcloud_pos = WordCloud(width=2000,
-                                  height=1500,
-                                  random_state=1,
-                                  background_color='black',
-                                  relative_scaling=1,
-                                  margin=20,
-                                  colormap='Pastel1',
-                                  collocations=False,
-                                  stopwords=stop_words).generate_from_frequencies(pos_freq)
-        wordcloud_pos.to_file(f'Word_cloud_pos_{video_name}.png')
-        wordcloud_neg = WordCloud(width=2000,
-                                  height=1500,
-                                  random_state=1,
-                                  background_color='black',
-                                  relative_scaling=1,
-                                  margin=20,
-                                  colormap='Pastel1',
-                                  collocations=False,
-                                  stopwords=stop_words).generate_from_frequencies(neg_freq)
-        wordcloud_neg.to_file(f'Word_cloud_neg_{video_name}.png')
+        graph_word_map(freq, pos_freq, neg_freq, video_name)
 
     return {'all_freq': freq, 'pos_freq': pos_freq, 'neg_freq': neg_freq}
 
@@ -243,8 +188,8 @@ def create_popularity_metrics(comments: dict,video_info:dict, video_name: str, a
         # calculate the first derivative of the count over time
         derivatives = [1.0 / deltas[i] for i in
                        range(len(cumulative_counts) - 1)]
-        counts_coeff = np.log2(derivatives) if comments_size == 1 else 1
-        comments_time_comp = np.mean(derivatives[-counts_coeff])
+        counts_coeff = int(np.log2(derivatives) if comments_size != 1 else 1)
+        comments_time_comp = np.mean(derivatives[:-counts_coeff])
         if comments_time_comp < 1:
             comments_time_comp = 1
     spam = 1+np.abs(comments_count - comments_size)/(max(comments_count, comments_size))

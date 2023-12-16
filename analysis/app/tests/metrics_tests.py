@@ -2,10 +2,13 @@ import unittest
 
 from matplotlib import pyplot as plt
 
+from app.db.db import DataBase
 from app.emotion_analisis.analyser import Analyser
 from app.metrics.loader import Loader
 
 from app.metrics.metric import *
+
+from app.metrics.collector import Collector
 
 
 class TestAnalisis(unittest.TestCase):
@@ -89,6 +92,12 @@ class TestAnalisis(unittest.TestCase):
         loader = Loader([ch_id])
         comments = loader.get_all_comments(ch_id, v_id)
         wc = plot_word_map(comments, v_id, True)
+    def test2_word_cloud(self):
+        v_id = 'CWpNfecqW54'
+        ch_id = 'UCg40OxZ1GYh3u3jBntB6DLg'
+        loader = Loader([ch_id])
+        comments = loader.get_all_comments(ch_id, v_id)
+        wc = plot_word_map(comments, v_id, True)
     def test_popularity(self):
         v_id = 'g_sA8hYU3b8'
         ch_id = 'UConVfxXodg78Tzh5nNu85Ew'
@@ -96,5 +105,22 @@ class TestAnalisis(unittest.TestCase):
         comments = loader.get_all_comments(ch_id, v_id)
         video = loader.load_video(v_id)
         mts = create_popularity_metrics(comments, video, v_id,print_metrics=True)
+    def test_collect(self):
+        # our channel
+        ch_id = 'UC4PoyiMa9Ha0SDRyRNDA_Qw'
+        db = DataBase()
+        db.create_connection()
+        collector = Collector(db)
+        collector.collect_metric(7, ch_id)
+        db.close_connection()
+
+    def test_collect_31_video(self):
+        # our channel
+        ch_id = 'UCLB7AzTwc6VFZrBsO2ucBMg'
+        db = DataBase()
+        db.create_connection()
+        collector = Collector(db)
+        collector.collect_metric(7, ch_id)
+        db.close_connection()
 if __name__ == '__main__':
     unittest.main()
