@@ -9,6 +9,8 @@
 - [Физическая модель данных](docs/phys_data_model.md)
 
 - [Функциональные требования](docs/functional_diagrams.md)
+  
+- [Пользовательский интерфейс](docs/ui.md)
 
 - [Логическая архитектура системы](docs/logic_system_architecture.md)
 
