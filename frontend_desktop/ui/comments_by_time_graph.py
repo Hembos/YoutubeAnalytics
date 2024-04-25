@@ -21,7 +21,8 @@ class CommentsByTime(PlotWidget):
 
         axis = self.getAxis('bottom')
         axis.setLabel(text='Time', units='s', unitPrefix=None, autoPrecision=True)
-        axis.setTicks([[(x[i], str(datetime_objects[i])) for i in range(len(x))]])
+        axis.setTicks([[(x[i], str(datetime_objects[i])) for i in range(0, len(x), 10)]])
+        # axis.setTicks([[(x[0], str(datetime_objects[0])), (x[len(x) - 1], str(datetime_objects[len(x) - 1]))]])
         
     def clear_graph(self) -> None:
         self.clear()

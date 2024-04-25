@@ -26,7 +26,7 @@ class RequestsTable(QTableWidget):
             date = QTableWidgetItem(request["date_completion"])
             data = QTableWidgetItem(str(request["data"]))
             
-            color = QColor(225, 139, 139) if not request["completed"] else QColor(139, 225, 139)
+            color = QColor(225, 139, 139) if not request["date_completion"] else QColor(139, 225, 139)
             
             type.setBackground(color)
             date.setBackground(color)

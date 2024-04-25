@@ -27,7 +27,7 @@ def get_channels_by_category(youtube: Youtube, data: dict, db: DataBase) -> None
 def get_channel_by_id(youtube: Youtube, data: dict, db: DataBase) -> None:
     channel = youtube.get_channel(data["channel_id"])
 
-    db.store_channel(channel, data["channel_id"], data["category"])
+    db.store_channel(channel, data["channel_id"])
 
     playlist_id = data["channel_id"][:1] + 'U' + data["channel_id"][2:]
 
@@ -42,7 +42,7 @@ def get_channel_by_id(youtube: Youtube, data: dict, db: DataBase) -> None:
         }
     }
 
-    db.add_scraper_request(request)
+    # db.add_scraper_request(request)
 
 
 def get_channel_by_url(youtube: Youtube, data: dict, db: DataBase) -> None:

@@ -29,6 +29,8 @@ class DataBase:
         self.__db_connection = MongoClient(
             mongodb_ip, port)
         self.__db = self.__db_connection[database_name]
+        
+        return True
 
     def close_connection(self) -> None:
         if self.__server:
@@ -125,3 +127,14 @@ class DataBase:
             videos[video['video_id']] = video
         return videos
 
+    # def del_(self) -> dict:
+    #     self.__db[SCRAPER_REQUESTS].delete_many({"completed": False})
+    
+    # def get_reply_like(self, video_id):
+    #     return self.__db["analysis"].find_one({"id": video_id, "type": 10})
+    
+    # def get_popularity(self):
+    #     return self.__db["analysis"].find({"type": 12})
+    
+    def get_time(self, video_id):
+        return self.__db["analysis"].find_one({"type": 7, "id": video_id})
