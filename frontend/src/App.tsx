@@ -1,12 +1,12 @@
 import { Routes, Route, BrowserRouter } from "react-router-dom";
-import Home from "./components/home/home";
+import Authorization from "./components/authorization/authorization";
 
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<Authorization />} />
         </Routes>
       </BrowserRouter>
     </div>

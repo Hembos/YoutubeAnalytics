@@ -11,6 +11,7 @@
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "@userfront/toolkit": "^1.0.8",
+    "mkcert": "^3.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0",
