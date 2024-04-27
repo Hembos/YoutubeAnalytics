@@ -1,5 +1,10 @@
 .tab {
   border: 2px solid black;
-  width: 300px;
+  width: 50%;
+  height: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
 }

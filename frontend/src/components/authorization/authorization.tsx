@@ -13,7 +13,7 @@ export default class Authorization extends Component {
 
   render() {
     return (
-      <div className="home">
+      <div className="authorization">
         <Tabs className="tab">
           <TabList>
             <Tab>Регистрация</Tab>
