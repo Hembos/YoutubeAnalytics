@@ -1,27 +1,56 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
+import AuthRequests from '../../utils/authorizationRequests'; 
+import { UserDetail } from "../../utils/authorizationRequests";
+const authRequests = new AuthRequests(); 
 
-export default class Login extends Component {
-  constructor() {
-    super({});
-  }
+const Login = () => {
+  const [emailOrUsername, setEmailOrUsername] = useState(''); 
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(''); 
 
-  render() {
-    return (
-      <div>
+  const handleLogin = async () => { 
+    const credentials:UserDetail = {emailOrUsername, password};
+    try {
+      const isOk: boolean = await authRequests.checkCredentials(credentials);
+      if (isOk) { 
+        // to do route to main page
+        console.log('Login successful'); 
+       } else {
+        setError('Email/Login does not exist or password is wrong'); 
+      }
+    }catch(error){
+      setError('Server error');
+    }
+   
+  };
+
+  return (
+      <div style={{ textAlign: "center" }}>
         <div>
-          <label>Электронная почта или логин</label>
-          <br />
-          <input type="text" />
+          <input 
+            type="text" 
+            className="form-input" 
+            placeholder="Введите вашу электронную почту или логин" 
+            value={emailOrUsername} 
+            onChange={e => setEmailOrUsername(e.target.value)} 
+          />
         </div>
 
         <div>
-          <label>Пароль</label>
-          <br />
-          <input type="text" />
+          <input 
+            type="password" 
+            className="form-input" 
+            placeholder="Введите ваш пароль" 
+            value={password} 
+            onChange={e => setPassword(e.target.value)} 
+          />
         </div>
 
-        <button>Войти</button>
+        {error && <div>{error}</div>}
+
+        <button onClick={handleLogin} className="btn-primary">Войти</button>
       </div>
-    );
-  }
-}
+  );
+};
+
+export default Login;
