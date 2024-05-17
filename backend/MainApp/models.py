@@ -86,3 +86,12 @@ class User(AbstractUser):
 
     class Meta:
         db_table = "tb_user"
+
+class ApiKeys(models.Model):
+    remaining_quota = models.IntegerField()
+    api_key = models.TextField()
+    mail = models.EmailField()
+    last_reset = models.DateTimeField()
+
+    class Meta:
+        db_table = "tb_api_keys"

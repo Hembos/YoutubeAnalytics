@@ -215,8 +215,8 @@ class VerifyEmail(GenericAPIView ):
             if not user.is_verified:
                 user.is_verified = True
                 user.save()
-            return response.Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
+            return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
         except jwt.ExpiredSignatureError as identifier:
-            return response.Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.exceptions.DecodeError as identifier:
-            return response.Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
