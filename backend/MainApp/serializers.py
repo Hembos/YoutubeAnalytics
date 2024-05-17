@@ -42,3 +42,21 @@ class CalculationResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = CalculationResult
         fields = '__all__'
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'first_name', 'last_name', 'username', 'email', 'password']
+        read_only_fields = ['id']
+
+
+class EmailVerificationSerializer(serializers.ModelSerializer):
+    token = serializers.CharField(max_length=555)
+
+    class Meta:
+        model = User
+        fields = ['token']

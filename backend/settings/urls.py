@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.template.defaulttags import url
 from django.urls import path, include
 from rest_framework import routers
 from django.urls import re_path
@@ -22,6 +23,10 @@ from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from MainApp.views import *
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -59,12 +64,18 @@ CalculationResultRouter.register(r'calculation-result', CalculationResultViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    #path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/login/', LoginView.as_view()),
+    path('api/v1/refresh/', RefreshView.as_view()),
     path('api/v1/', include(ChannelRouter.urls)),
     path('api/v1/', include(ChannelGroupRouter.urls)),
     path('api/v1/', include(VideoRouter.urls)),
     path('api/v1/', include(VideoGroupRouter.urls)),
     path('api/v1/', include(RequestRouter.urls)),
     path('api/v1/', include(CalculationResultRouter.urls)),
+    path('api/v1/signup/', SignUp.as_view()),
+    path('email-verify/', VerifyEmail.as_view(), name="email-verify"),
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
