@@ -1,45 +1,20 @@
-import base64
-import datetime
-import threading
-
-import jwt
 from django.contrib.auth import authenticate
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail import EmailMessage
+from django.core.mail import send_mail
 from django.db import transaction
 from django.urls import reverse
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.middleware import csrf
-import pytz
+import urllib.parse
 
 import settings.settings
 from MainApp.serializers import *
 from rest_framework import viewsets, permissions, status
-
-
-class EmailThread(threading.Thread):
-
-    def __init__(self, email):
-        self.email = email
-        threading.Thread.__init__(self)
-
-    def run(self):
-        self.email.send()
-
-
-class Util:
-    @staticmethod
-    def send_email(data):
-        email = EmailMessage(
-            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-        EmailThread(email).start()
 
 
 class IsValidated(BasePermission):
@@ -102,11 +77,10 @@ class RefreshView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
-        data = request.data
         response = Response()
 
         cookie = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'], None)
-
+        user = None
         if cookie is not None:
 
             try:
@@ -172,51 +146,57 @@ class LoginView(APIView):
 class SignUp(GenericAPIView):
     serializer_class = SignUpSerializer
     permission_classes = [permissions.AllowAny]
+
     def post(self, request):
         with transaction.atomic():
-            tz = pytz.timezone(settings.TIME_ZONE)
             data = request.data
             serializer = self.serializer_class(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             user = serializer.data
 
+            absurl = 'http://' + get_current_site(request).domain + reverse('email-verify')
+            params = {'email': user['email'], 'token': user['token']}
+            url = absurl + '?' + urllib.parse.urlencode(params)
+            email_body = 'Hi ' + user['username'] + ',\nUse the link below to verify your email \n' + url
+            send_mail('Verify your email', email_body, None, user['email'], False, )
 
-            token = jwt.encode(
-                {"user_email": user['email'], "exp": tz.localize(datetime.datetime.now()) + datetime.timedelta(hours=1)},
-                settings.SECRET_KEY)
+            return Response({"success": "Account successfully created"}, status=status.HTTP_201_CREATED)
 
-            current_site = get_current_site(request).domain
 
-            relative_link = reverse('email-verify')
-            absurl = 'http://' + current_site + relative_link + "?token=" + str(token)
-            email_body = 'Hi ' + user['username'] + \
-                         ' Use the link below to verify your email \n' + absurl
-            data = {'email_body': email_body, 'to_email': user['email'],
-                    'email_subject': 'Verify your email'}
+class VerifyEmail(GenericAPIView):
+    permission_classes = [permissions.AllowAny]
 
-            Util.send_email(data=data)
-
-            return Response(status=status.HTTP_201_CREATED)
-
-class VerifyEmail(GenericAPIView ):
-    serializer_class = EmailVerificationSerializer
-
-    token_param_config = openapi.Parameter(
-        'token', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
-
-    @swagger_auto_schema(manual_parameters=[token_param_config])
     def get(self, request):
         token = request.GET.get('token')
+        email = request.GET.get('email')
+
         try:
-            payload = jwt.decode(token, options={"verify_signature": False})
-            print(payload)
-            user = models.User.objects.get(id=payload['user_id'])
-            if not user.is_verified:
-                user.is_verified = True
-                user.save()
-            return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError as identifier:
-            return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as identifier:
-            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'Invalid email'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not token == user.token:
+            return Response({'error': 'Invalid token'}, status.HTTP_400_BAD_REQUEST)
+
+        if not user.is_verified:
+            user.is_verified = True
+            user.save()
+
+        return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
+
+
+class SendVerificationLink(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        if request.user.is_verified:
+            return Response({'error': 'User already verified'}, status=status.HTTP_400_BAD_REQUEST)
+
+        absurl = 'http://' + get_current_site(request).domain + reverse('email-verify')
+        params = {'email': request.user.email, 'token': request.user.token}
+        url = absurl + '?' + urllib.parse.urlencode(params)
+        email_body = 'Hi ' + request.user.username + ',\nUse the link below to verify your email \n' + url
+        send_mail('Verify your email', email_body, None, [request.user.email], False)
+
+        return Response(status=status.HTTP_200_OK)

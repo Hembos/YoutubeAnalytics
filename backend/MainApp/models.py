@@ -1,7 +1,9 @@
+import secrets
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.utils.translation import gettext_lazy as _
 
 class Channel(models.Model):
     country = models.TextField()
@@ -82,10 +84,18 @@ class CalculationResult(models.Model):
 
 
 class User(AbstractUser):
-    is_validated = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    token = models.TextField(editable=False)
+    email = models.EmailField(_("email address"), unique=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.token = secrets.token_urlsafe(30)
+        super(User, self).save(*args, **kwargs)
 
     class Meta:
         db_table = "tb_user"
+
 
 class ApiKeys(models.Model):
     remaining_quota = models.IntegerField()
