@@ -64,8 +64,6 @@ CalculationResultRouter.register(r'calculation-result', CalculationResultViewSet
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    #path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/v1/login/', LoginView.as_view()),
     path('api/v1/refresh/', RefreshView.as_view()),
     path('api/v1/', include(ChannelRouter.urls)),
@@ -75,8 +73,8 @@ urlpatterns = [
     path('api/v1/', include(RequestRouter.urls)),
     path('api/v1/', include(CalculationResultRouter.urls)),
     path('api/v1/signup/', SignUp.as_view()),
-    path('email-verify/', VerifyEmail.as_view(), name="email-verify"),
-    path('send-verification-link/', SendVerificationLink.as_view()),
+    path('api/v1/email-verify/', VerifyEmail.as_view(), name="email-verify"),
+    path('api/v1/send-verification-link/', SendVerificationLink.as_view()),
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

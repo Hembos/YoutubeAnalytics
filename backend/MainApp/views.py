@@ -159,7 +159,7 @@ class SignUp(GenericAPIView):
             params = {'email': user['email'], 'token': user['token']}
             url = absurl + '?' + urllib.parse.urlencode(params)
             email_body = 'Hi ' + user['username'] + ',\nUse the link below to verify your email \n' + url
-            send_mail('Verify your email', email_body, None, user['email'], False, )
+            send_mail('Verify your email', email_body, None, [user['email']], False, )
 
             return Response({"success": "Account successfully created"}, status=status.HTTP_201_CREATED)
 
@@ -179,7 +179,9 @@ class VerifyEmail(GenericAPIView):
         if not token == user.token:
             return Response({'error': 'Invalid token'}, status.HTTP_400_BAD_REQUEST)
 
-        if not user.is_verified:
+        if user.is_verified:
+            return Response({'error': 'User already verified'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
             user.is_verified = True
             user.save()
 
