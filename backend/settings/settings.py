@@ -27,6 +27,10 @@ SECRET_KEY = '8hhn4pb)r%fgyo#x)q=)%hpg*!c!^8hdy#m&owdr86byrg2&!8via3uchz$^wgz7w0
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3030',
+    'http://localhost:3000',
+]
 
 
 # Application definition
@@ -43,6 +47,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -53,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'settings.urls'
