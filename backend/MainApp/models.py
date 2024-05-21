@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 class Channel(models.Model):
     country = models.TextField()
     description = models.TextField()
@@ -29,6 +30,7 @@ class ChannelGroup(models.Model):
 
 class Video(models.Model):
     channel = models.ForeignKey(Channel, on_delete=models.DO_NOTHING, related_name="video")
+    yt_id = models.TextField(unique=True)
     description = models.TextField()
     duration = models.DurationField()
     like_count = models.IntegerField()
@@ -64,8 +66,15 @@ class VideoGroup(models.Model):
         db_table = 'tb_video_group'
 
 
+class RequestType(models.Model):
+    type = models.TextField()
+
+    class Meta:
+        db_table = 'tb_request_type'
+
+
 class Request(models.Model):
-    type = models.IntegerField()
+    type = models.ForeignKey(RequestType, on_delete=models.DO_NOTHING)
     progress = models.IntegerField()
     date_completion = models.DateTimeField()
     data = models.TextField()

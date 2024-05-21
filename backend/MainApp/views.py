@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth import authenticate
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -138,9 +140,9 @@ class LoginView(APIView):
 
                 return response
             else:
-                return Response({"No active": "This account is not active!!"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"No active": "This account is not active!!"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"Invalid": "Invalid username or password!!"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"Invalid": "Invalid username or password!!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SignUp(GenericAPIView):
@@ -202,3 +204,32 @@ class SendVerificationLink(GenericAPIView):
         send_mail('Verify your email', email_body, None, [request.user.email], False)
 
         return Response(status=status.HTTP_200_OK)
+
+
+def get_youtube_video_id(url):
+    video_id = None
+
+    pattern = r"^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*"
+
+    match = re.search(pattern, url)
+    if match:
+        video_id = match.group(7)
+    return video_id
+
+
+class MakeDownloadRequest(GenericAPIView):
+    permission_classes = [IsValidated]
+
+    def post(self, request):
+        url = request.POST.get('url', None)
+        yt_id = request.POST.get('id', None)
+        request_type = request.POST.get('request_type', None)
+
+        if yt_id is not None:
+            return Response()
+
+        if url is not None:
+            yt_id = get_youtube_video_id(url)
+            return Response()
+
+        return Response()
