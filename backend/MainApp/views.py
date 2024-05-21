@@ -1,10 +1,14 @@
 import re
 
+import drf_yasg.openapi
 from django.contrib.auth import authenticate
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.db import transaction
 from django.urls import reverse
+from drf_yasg import openapi
+from drf_yasg.openapi import Schema, TYPE_OBJECT, TYPE_STRING
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
@@ -78,8 +82,25 @@ def get_tokens_for_user(user):
 class RefreshView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('refresh_token', openapi.IN_HEADER, type=openapi.TYPE_STRING,
+                              description='refresh token cookie',
+                              required=True)
+        ],
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('reobtained refresh token', Schema(
+            type=TYPE_OBJECT,
+            properties={
+                'token': Schema(
+                    type=TYPE_STRING
+                )
+            }
+        ), {"application/json": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1ODk3MjY2LCJpYXQiOjE3MTU4OTY5NjYsImp0aSI6IjYxZmQxYmY5ODE0YTQ2MDE4NTc0YWI0YzZjNDc2MWRmIiwidXNlcl9pZCI6MX0.dCAjunkoVnElPmttth5zjaf9z3a9FvNMBiuOLltUIIo"}}),
+                   403: "This account is not active!!", 404: "Invalid username or password!!"}
+    )
     def post(self, request, format=None):
-        response = Response()
+        response = Response(status=status.HTTP_200_OK)
 
         cookie = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'], None)
         user = None
@@ -108,7 +129,7 @@ class RefreshView(APIView):
 
                 return response
             else:
-                return Response({"No active": "This account is not active!!"}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"No active": "This account is not active!!"}, status=status.HTTP_403_FORBIDDEN)
         else:
             return Response({"Invalid": "Invalid username or password!!"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -116,11 +137,30 @@ class RefreshView(APIView):
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        request_body=LoginSerializer,
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully authenticated', Schema(
+            type=TYPE_OBJECT,
+            properties={
+                'token': Schema(
+                    type=TYPE_STRING
+                )
+            }
+        ), {"application/json": {
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE1ODk3MjY2LCJpYXQiOjE3MTU4OTY5NjYsImp0aSI6IjYxZmQxYmY5ODE0YTQ2MDE4NTc0YWI0YzZjNDc2MWRmIiwidXNlcl9pZCI6MX0.dCAjunkoVnElPmttth5zjaf9z3a9FvNMBiuOLltUIIo"}}),
+                   403: "This account is not active!!", 404: "Invalid username or password!!"}
+    )
     def post(self, request, format=None):
+
         data = request.data
         response = Response()
         username = data.get('username', None)
         password = data.get('password', None)
+        email = data.get('email', None)
+
+        if username is None and email is not None:
+            user = User.objects.get(email=email)
+            username = user.username
 
         user = authenticate(username=username, password=password)
 
@@ -149,6 +189,17 @@ class SignUp(GenericAPIView):
     serializer_class = SignUpSerializer
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        responses={status.HTTP_201_CREATED: drf_yasg.openapi.Response("Account successfully created", Schema(
+            type=TYPE_OBJECT,
+            properties={
+                'success': Schema(
+                    type=TYPE_STRING
+                )
+            }
+        ), {"application/json": {
+            "success": "Account successfully created"}}),
+                   })
     def post(self, request):
         with transaction.atomic():
             data = request.data
@@ -166,9 +217,26 @@ class SignUp(GenericAPIView):
             return Response({"success": "Account successfully created"}, status=status.HTTP_201_CREATED)
 
 
-class VerifyEmail(GenericAPIView):
+class VerifyEmail(APIView):
     permission_classes = [permissions.AllowAny]
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter("token", type=openapi.TYPE_STRING, description="user's token", in_=openapi.IN_PATH),
+            openapi.Parameter("email", type=openapi.TYPE_STRING, description="email", in_=openapi.IN_PATH)],
+        responses={
+            status.HTTP_200_OK: drf_yasg.openapi.Response("email successfully verified",
+                                                          Schema(
+                                                              type=TYPE_OBJECT,
+                                                              properties={'success': Schema(type=TYPE_STRING)}
+                                                          ), {"application/json": {
+                    "success": "email successfully verified"}}),
+            status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response("error",
+                                                          Schema(
+                                                              type=TYPE_OBJECT,
+                                                              properties={'error': Schema(type=TYPE_STRING)}
+                                                          ), {"application/json": {"error": "Invalid email"}}),
+        })
     def get(self, request):
         token = request.GET.get('token')
         email = request.GET.get('email')
@@ -187,10 +255,10 @@ class VerifyEmail(GenericAPIView):
             user.is_verified = True
             user.save()
 
-        return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
+        return Response({'success': 'email successfully verified'}, status=status.HTTP_200_OK)
 
 
-class SendVerificationLink(GenericAPIView):
+class SendVerificationLink(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):

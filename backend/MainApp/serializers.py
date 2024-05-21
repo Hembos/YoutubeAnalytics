@@ -60,3 +60,12 @@ class SignUpSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'first_name', 'last_name', 'username', 'email', 'password', 'token']
         read_only_fields = ['id']
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)
+    email = serializers.EmailField(required=False)
+    password = serializers.CharField(required=True)
+
+
+
