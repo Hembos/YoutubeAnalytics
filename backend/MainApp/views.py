@@ -232,10 +232,10 @@ class VerifyEmail(APIView):
                                                           ), {"application/json": {
                     "success": "email successfully verified"}}),
             status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response("error",
-                                                          Schema(
-                                                              type=TYPE_OBJECT,
-                                                              properties={'error': Schema(type=TYPE_STRING)}
-                                                          ), {"application/json": {"error": "Invalid email"}}),
+                                                                   Schema(
+                                                                       type=TYPE_OBJECT,
+                                                                       properties={'error': Schema(type=TYPE_STRING)}
+                                                                   ), {"application/json": {"error": "Invalid email"}}),
         })
     def get(self, request):
         token = request.GET.get('token')
@@ -301,3 +301,11 @@ class MakeDownloadRequest(GenericAPIView):
             return Response()
 
         return Response()
+
+
+class ProfileView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ProfileSerializer
+
+    def get(self, request):
+        return Response(ProfileSerializer(request.user).data)

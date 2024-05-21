@@ -73,6 +73,7 @@ urlpatterns = [
     path('api/v1/', include(RequestRouter.urls)),
     path('api/v1/', include(CalculationResultRouter.urls)),
     path('api/v1/signup/', SignUp.as_view()),
+    path('api/v1/profile/', ProfileView.as_view()),
     path('api/v1/email-verify/', VerifyEmail.as_view(), name="email-verify"),
     path('api/v1/send-verification-link/', SendVerificationLink.as_view()),
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
