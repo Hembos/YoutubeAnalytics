@@ -1,13 +1,8 @@
-from pymongo import MongoClient, UpdateOne
-from sshtunnel import SSHTunnelForwarder
-
-import logging
-
 from datetime import date, datetime
-from time import time
-
 from db.config import *
 from db.config.collections_names import *
+import psycopg2
+import logging
 
 
 class DataBase:
@@ -15,126 +10,127 @@ class DataBase:
         self.__server = None
         self.__db_connection = None
         self.__db = None
-
-    def create_connection(self) -> bool:
-        port = mongodb_port
-        if ssh_connection:
-            self.__server = SSHTunnelForwarder(ssh_ip, ssh_username=ssh_username,
-                                               ssh_password=ssh_password, remote_bind_address=(mongodb_ip, mongodb_port))
-
-            self.__server.start()
-            
-            port = self.__server.local_bind_port
-
-        self.__db_connection = MongoClient(
-            mongodb_ip, port)
-        self.__db = self.__db_connection[database_name]
+        
+    def create_connection(self, port) -> bool:
+        self.__db_connection = psycopg2.connect(dbname=database_name, user=db_username, password=db_password, host=db_ip, port=port)
+        self.__db = self.__db_connection.cursor()
+        
+        logging.info("Database connection created")
         
         return True
 
     def close_connection(self) -> None:
-        if self.__server:
-            self.__server.stop()
-
         if self.__db_connection:
             self.__db_connection.close()
 
-        logging.info("Close connection")
+        logging.info("Close db connection")
+        
+    def reset_api_quota(self) -> bool:
+        today = date.today()
+        
+        self.__db.execute("select id from tb_api_keys where last_reset<%(date)s", {"date": today})
+        result = self.__db.fetchall()
+        
+        if result is None:
+            return False
+        
+        api_ids = result
+        self.__db.executemany("UPDATE tb_api_keys SET remaining_quota=%(quota)s, last_reset=%(date)s WHERE id = %(api_id)s", 
+                              [{"quota": 10000, "date": today, "api_id": api_id} for api_id in api_ids])
+        self.__db_connection.commit()
 
-    def get_available_api(self, min_quota_size) -> dict:
-        query = {"quota": {"$gte": min_quota_size}}
-        api = self.__db[API_KEYS].find_one(query)
+        return True
+    
+    def get_scraper_requests(self, min_type, max_type, num_requests) -> list:
+        self.__db.execute("""select id, type_id, data, progress, user_id from tb_request where type_id<%(max_type)s 
+                          and type_id>=%(min_type)s and progress>%(progress)s limit %(num_requests)s""", 
+                          {"min_type": min_type, "max_type": max_type, "num_requests": num_requests, "progress": 0})
+        result = self.__db.fetchall()
+        
+        return result
 
-        return api
-
+    def get_available_api(self, min_quota_size) -> dict | None:
+        self.__db.execute("select api_key, remaining_quota from tb_api_keys where remaining_quota>=%(min_quota_size)s", {"min_quota_size": min_quota_size})
+        result = self.__db.fetchone()
+        
+        return result and {"key": result[0], "quota": result[1]}
+    
     def update_api_quota(self, key, quota_size) -> bool:
-        filter_query = {"key": key}
-        update_query = {"$set": {"quota": quota_size}}
+        self.__db.execute("update tb_api_keys set remaining_quota=%(quota)s WHERE api_key = %(key)s", 
+                              {"quota": quota_size, "key": key})
+        self.__db_connection.commit()
+        
+        return True
+    
+    def update_scraper_request(self, request_id, request_progress, request_data):
+        date_completion = None
+        if request_progress <= 0:
+            date_completion = datetime.today().isoformat()
 
-        return self.__db[API_KEYS].update_one(filter_query, update_query).raw_result["updatedExisting"]
-
-    def reset_api_quota(self):
-        today = date.today().isoformat()
-        query_filter = {"last_reset": {"$lt": today}}
-        update_query = {"$set": {"quota": 10000, "last_reset": today}}
-
-        return self.__db[API_KEYS].update_many(query_filter, update_query).raw_result["updatedExisting"]
-
+        self.__db.execute("update tb_request set progress=%(progress)s, date_completion=%(date_completion)s, data=%(data)s WHERE id = %(id)s", 
+                              {"progress": request_progress, "id": request_id, "date_completion": date_completion, "data": request_data})
+        self.__db_connection.commit()
+        
     def store_channel(self, channel: dict, channel_id: str) -> bool:
-        filter_query = {"id": channel_id}
-        update_query = {"$set": channel}
-
-        return self.__db[CHANNELS_COLLECTION_NAME].update_one(
-            filter_query, update_query, upsert=True).raw_result["updatedExisting"]
-
+        self.__db.execute("""insert into tb_channel(country, description, published_at, subscriber_count, title, video_count, view_count, yt_id, customUrl) values 
+                          (%(country)s, %(description)s, %(publishedAt)s, %(subscriber_count)s, 
+                          %(title)s, %(video_count)s, %(view_count)s, %(yt_id)s, %(customUrl)s)""", 
+                              {"country": channel["country"], "description": channel["description"],
+                               "publishedAt": channel["publishedAt"], "subscriber_count": channel["subscriberCount"],
+                               "title": channel["title"], "video_count": channel["videoCount"],
+                               "view_count": channel["viewCount"], "yt_id": channel_id, "customUrl": channel["customUrl"]})
+        self.__db_connection.commit()
+        
+        return True
+    
+    def add_scraper_request(self, type_id, progress, data, user_id):
+        self.__db.execute("""insert into tb_request(type_id, progress, date_completion, data, user_id) values 
+                          (%(type_id)s, %(progress)s, %(date_completion)s, %(data)s, %(user_id)s)""", 
+                              {"type_id": type_id, "progress": progress,
+                               "data": data, "user_id": user_id,
+                               "date_completion": None})
+        self.__db_connection.commit()
+        
     def store_video(self, video: dict, video_id: str) -> bool:
-        filter_query = {"video_id": video_id}
-        update_query = {"$set": video}
-
-        return self.__db[VIDEOS_COLLECTION_NAME].update_one(
-            filter_query, update_query, upsert=True).raw_result["updatedExisting"]
-
-    def is_channel_exists(self, channel_id: str):
-        query = {"channel_id": channel_id}
-        return self.__db[CHANNELS_COLLECTION_NAME].find_one(query) != None
-
-    def is_video_exists(self, video_id: str):
-        query = {"video_id": video_id}
-        return self.__db[VIDEOS_COLLECTION_NAME].find_one(query) != None
-
-    def get_scraper_request(self, min_type, max_type):
-        query = {"completed": False, "type": {
-            "$gte": min_type, "$lt": max_type + 1}}
-        request = self.__db[SCRAPER_REQUESTS].find_one(query)
-
-        return request
-
-    def update_scraper_request(self, request: dict):
-        filter_query = {"_id": request["_id"]}
-
-        if request["tasks_left"] <= 0:
-            request["completed"] = True
-            request["date_completion"] = datetime.today().isoformat()
-
-        update_query = {"$set": request}
-        return self.__db[SCRAPER_REQUESTS].update_one(filter_query, update_query, upsert=True).raw_result["updatedExisting"]
-
-    def add_scraper_request(self, request: dict):
-        return self.__db[SCRAPER_REQUESTS].insert_one(request)
-
+        self.__db.execute("""insert into tb_video(description, duration, like_count, published_at, view_count, comment_count, language, channel_id, yt_id) values 
+                          (%(description)s, %(duration)s, %(like_count)s, %(published_at)s, 
+                          %(view_count)s, %(comment_count)s, %(language)s, %(channel_id)s, %(yt_id)s)""", 
+                              {"description": video["description"], "duration": video["duration"],
+                               "like_count": video["likeCount"], "published_at": video["publishedAt"],
+                               "view_count": video["viewCount"], "comment_count": video["commentCount"],
+                               "language": video["defaultLanguage"], "channel_id": video["channelId"], "yt_id": video_id,})
+        self.__db_connection.commit()
+        
+        return True
+    
     def store_comments(self, comments: dict) -> None:
-        start = time()
-        operations = []
         for comment in comments:
-            filter_query = {"id": comment["id"]}
-            update_query = {"$set": comment}
-            operations.append(
-                UpdateOne(filter_query, update_query, upsert=True))
-
-        self.__db[COMMENTS_COLLECTION_NAME].bulk_write(
-            operations, ordered=False)
-        print(time() - start)
-
-    def get_comments(self, video_id) -> list:
-        comments = []
-        for comment in self.__db[COMMENTS_COLLECTION_NAME].find({"videoId": video_id}):
-            comments.append(comment)
-        return comments
-
-    def get_videos(self, channel_id) -> dict:
-        videos = {}
-        for video in self.__db[VIDEOS_COLLECTION_NAME].find({"channelId": channel_id}):
-            videos[video['video_id']] = video
-        return videos
-
-    # def del_(self) -> dict:
-    #     self.__db[SCRAPER_REQUESTS].delete_many({"completed": False})
-    
-    # def get_reply_like(self, video_id):
-    #     return self.__db["analysis"].find_one({"id": video_id, "type": 10})
-    
-    # def get_popularity(self):
-    #     return self.__db["analysis"].find({"type": 12})
-    
-    def get_time(self, video_id):
-        return self.__db["analysis"].find_one({"type": 7, "id": video_id})
+            if not comment["isReply"]:
+                self.__db.execute("""insert into tb_comment(original_text, author_display_name, like_count, published_at, updated_at, total_reply_count, video_id, yt_id) values 
+                                (%(original_text)s, %(author_display_name)s, %(like_count)s, %(published_at)s, 
+                                %(updated_at)s, %(total_reply_count)s, %(video_id)s, %(yt_id)s)""",
+                                {"original_text": comments["textOriginal"], "author_display_name": comments["authorDisplayName"],
+                                    "like_count": comments["likeCount"], "published_at": comments["publishedAt"],
+                                    "updated_at": comments["updatedAt"], "total_reply_count": comments["totalReplyCount"],
+                                    "video_id": comments["videoId"], "yt_id": comment["id"],})
+                self.__db_connection.commit()
+            else:
+                self.__db.execute("""insert into tb_comment(original_text, author_display_name, like_count, published_at, updated_at, total_reply_count, video_id, yt_id) values 
+                                (%(original_text)s, %(author_display_name)s, %(like_count)s, %(published_at)s, 
+                                %(updated_at)s, %(total_reply_count)s, %(video_id)s, %(yt_id)s)""",
+                                {"original_text": comments["textOriginal"], "author_display_name": comments["authorDisplayName"],
+                                    "like_count": comments["likeCount"], "published_at": comments["publishedAt"],
+                                    "updated_at": comments["updatedAt"], "total_reply_count": 0,
+                                    "video_id": comments["videoId"], "yt_id": comment["id"],})
+                self.__db_connection.commit()
+                
+                # self.__db.execute("""insert into tb_comment_replies (from_comment_id, to_comment_id)
+                #                         select
+                #                             c.id,
+                #                             r.id,
+                #                         from tb_comment c
+                #                         inner join tb_comment r
+                #                         on r.RoleId = u.RoleId
+                #                         and c.yt_id = %(parentId)s""", {"parentId": comments["parentId"]})
+                # self.__db_connection.commit()
+        
