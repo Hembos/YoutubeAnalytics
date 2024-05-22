@@ -39,6 +39,16 @@ class ChannelGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
     serializer_class = ChannelGroupSerializer
 
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data["user"] = request.user.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 
 class VideoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
@@ -56,6 +66,16 @@ class VideoGroupViewSet(viewsets.ModelViewSet):
     queryset = VideoGroup.objects.all()
     permission_classes = [IsValidated]
     serializer_class = VideoGroupSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data["user"] = request.user.id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class RequestViewSet(viewsets.ModelViewSet):
