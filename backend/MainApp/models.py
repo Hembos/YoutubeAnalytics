@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 class Channel(models.Model):
     country = models.TextField()
-    yt_id = models.TextField()
+    yt_id = models.TextField(unique=True)
     description = models.TextField()
     published_at = models.DateTimeField()
     subscriber_count = models.IntegerField()
@@ -30,7 +30,7 @@ class ChannelGroup(models.Model):
 
 
 class Video(models.Model):
-    channel = models.ForeignKey(Channel, on_delete=models.DO_NOTHING, related_name="video")
+    channel = models.ForeignKey(Channel, on_delete=models.DO_NOTHING, related_name="video", to_field="yt_id")
     yt_id = models.TextField(unique=True)
     description = models.TextField()
     duration = models.DurationField()
@@ -45,8 +45,8 @@ class Video(models.Model):
 
 
 class Comment(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, related_name="comment")
-    yt_id = models.TextField()
+    video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, related_name="comment", to_field="yt_id")
+    yt_id = models.TextField(unique=True)
     original_text = models.TextField()
     author_display_name = models.TextField()
     like_count = models.IntegerField()
