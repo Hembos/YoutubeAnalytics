@@ -10,9 +10,11 @@ import home_icon from "../../img/home.svg";
 import { Form, Row, Col, Button } from "react-bootstrap";
 import { Context } from "../..";
 import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header: React.FC = () => {
   const { store } = useContext(Context);
+  const navigate = useNavigate();
 
   return (
     <Nav
@@ -31,13 +33,29 @@ const Header: React.FC = () => {
       </Navbar.Brand>
       <Form>
         <Col>
-          <Button variant="light">
+          <Button
+            variant="light"
+            onClick={() => {
+              navigate("/");
+            }}
+          >
             <img alt="" width="30" height="30" src={home_icon} />
           </Button>
-          <Button variant="light">
+          <Button
+            variant="light"
+            onClick={() => {
+              navigate("/profile");
+            }}
+          >
             <img alt="" width="30" height="30" src={profile_icon} />
           </Button>
-          <Button variant="light" onClick={() => store.logout()}>
+          <Button
+            variant="light"
+            onClick={() => {
+              navigate("/");
+              store.logout();
+            }}
+          >
             <img alt="" width="30" height="30" src={logout_icon} />
           </Button>
         </Col>
