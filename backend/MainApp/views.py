@@ -25,7 +25,7 @@ from rest_framework import viewsets, permissions, status
 
 class IsValidated(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.is_validated)
+        return bool(request.user and request.user.is_authenticated and request.user.is_verified)
 
 
 class ChannelViewSet(viewsets.ModelViewSet):
@@ -291,15 +291,10 @@ class MakeDownloadRequest(GenericAPIView):
     permission_classes = [IsValidated]
 
     def post(self, request):
-        url = request.POST.get('url', None)
         yt_id = request.POST.get('id', None)
         request_type = request.POST.get('request_type', None)
 
         if yt_id is not None:
-            return Response()
-
-        if url is not None:
-            yt_id = get_youtube_video_id(url)
             return Response()
 
         return Response()
@@ -325,3 +320,38 @@ class LogoutView(GenericAPIView):
                 return Response({"Error": str(terror)})
             token.blacklist()
         return Response(status=status.HTTP_200_OK)
+
+
+class AddVideoToGroupView(GenericAPIView):
+    permission_classes = [IsValidated]
+
+    @swagger_auto_schema(
+        request_body=AddVideoToGroupSerializer,
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=VideoGroupSerializer),
+                   status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
+    )
+    def post(self, request):
+        video_group_id = request.POST.get("video_group_id", None)
+        video_yt_id = request.POST.get("video_yt_id", None)
+
+        if video_yt_id is None:
+            return Response({"invalid data": "video_yt_id mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
+        if video_group_id is None:
+            return Response({"invalid data": "video_group_id mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            video = Video.objects.get(yt_id=video_yt_id)
+        except Video.DoesNotExist:
+            return Response({"invalid data": f"No video with video_yt_id = {video_yt_id}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            video_group = VideoGroup.objects.get(pk=video_group_id)
+        except VideoGroup.DoesNotExist:
+            return Response({"invalid data": f"No video_group with video_group_id = {video_group_id}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        video_group.videos.add(video)
+
+        return Response(VideoGroupSerializer(video_group).data)

@@ -55,14 +55,13 @@ class Comment(models.Model):
     total_reply_count = models.IntegerField()
     replies = models.ManyToManyField('self')
 
-
     class Meta:
         db_table = 'tb_comment'
 
 
 class VideoGroup(models.Model):
     title = models.TextField()
-    videos = models.ManyToManyField(Video, related_name="video_group")
+    videos = models.ManyToManyField(Video, related_name="video_group", blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name="video_group")
 
     class Meta:
