@@ -79,7 +79,7 @@ class RequestType(models.Model):
 class Request(models.Model):
     type = models.ForeignKey(RequestType, on_delete=models.DO_NOTHING)
     progress = models.IntegerField()
-    date_completion = models.DateTimeField()
+    date_completion = models.DateTimeField(blank=True, null=True)
     data = models.TextField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name="request")
 

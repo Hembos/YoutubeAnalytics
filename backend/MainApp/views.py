@@ -309,3 +309,17 @@ class ProfileView(GenericAPIView):
 
     def get(self, request):
         return Response(ProfileSerializer(request.user).data)
+
+
+class LogoutView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        cookie = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'], None)
+        if cookie is not None:
+            try:
+                token = RefreshToken(cookie)
+            except TokenError as terror:
+                return Response({"Error": str(terror)})
+            token.blacklist()
+        return Response(status=status.HTTP_200_OK)
