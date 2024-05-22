@@ -112,6 +112,8 @@ class RefreshView(APIView):
                 return Response({"Error": str(terror)})
             user = User.objects.get(pk=token.payload['user_id'])
             token.blacklist()
+        else:
+            return Response({"Error": "No refresh token cookie found!"}, status=status.HTTP_403_FORBIDDEN)
 
         if user is not None:
             if user.is_active:
