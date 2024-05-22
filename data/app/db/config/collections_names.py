@@ -1,13 +1,9 @@
-API_KEYS = "api_keys"
+API_KEYS = "tb_api_keys"
 
-VIDEOS_COLLECTION_NAME = "videos"
+VIDEOS_TABLE_NAME = "tb_video"
 
-COMMENTS_COLLECTION_NAME = "comments"
+COMMENTS_TABLE_NAME = "tb_comment"
 
-CHANNELS_COLLECTION_NAME = "channels"
+CHANNELS_TABLE_NAME = "tb_channel"
 
-ANALYSIS_COLLECTION_NAME = "analysis"
-
-VIDEO_CATEGORIES = "video_categories"
-
-SCRAPER_REQUESTS = "scraper_requests"
+REQUESTS = "tb_request"
