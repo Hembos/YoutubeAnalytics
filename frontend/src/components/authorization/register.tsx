@@ -1,97 +1,62 @@
-import React, { useState, useEffect, ChangeEvent } from "react";
-import AuthRequests, { UserDetail } from '../../utils/authorizationRequests'; 
+import React, { useState, useContext, ChangeEvent } from "react";
+import "bootstrap/dist/css/bootstrap.css";
+import Form from "react-bootstrap/Form";
+import Button from "react-bootstrap/Button";
+import { Context } from "../..";
+import { observer } from "mobx-react-lite";
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-
-  const [emailErr, setEmailErr] = useState<string>("");
-  const [nameErr, setNameErr] = useState<string>("");
-  const [passwordErr, setPasswordErr] = useState<string>("");
-
-  const authRequests = new AuthRequests();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      validateEmail() 
-        ? (await checkEmail() 
-          ? setEmailErr("") 
-          : setEmailErr("Email уже существует" ))
-        : setEmailErr("Некорректный email");
-      validateName() 
-        ? (await checkName() 
-          ? setNameErr("") 
-          : setNameErr('Имя пользователя занято'))
-        : setNameErr("Имя пользователя не может быть пустым");
-      validatePassword() 
-        ? setPasswordErr("") 
-        : setPasswordErr("Пароль должен состоять хотя бы из 6 символов");
-    };
-
-    fetchData();
-  }, [email, name, password]);
-
-  const validateEmail = ():boolean => (/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/).test(email);
-  const validateName = ():boolean => name.length > 0;
-  const validatePassword = ():boolean => password.length >= 6;
-
-  const checkName = async (): Promise<boolean> => {
-    try{
-      const exists:boolean = await authRequests.checkIfUsernameExists(name);
-      return !exists;
-    }catch(error){
-      console.log("Попытка проверить существование username",error);
-      return false;
-    }
-  }
-
-  const checkEmail = async (): Promise<boolean> => {
-    try{
-      const exists:boolean = await authRequests.checkIfEmailExists(email);
-      return !exists;
-    }catch(error){
-      console.log("Попытка проверить существование email",error);
-      return false;
-    }
-  }
-
-  const handleRegister = async () => {
-    if (!emailErr && !nameErr && !passwordErr) {
-      const user: UserDetail = { emailOrUsername: name, password };
-      try {
-        const success = await authRequests.createUser(user);
-        // todo route to main or email conformation
-        if (!success) {
-          console.log("Failed to register.");
-        }
-      } catch (error) {
-        console.log("Failed to register.", error);
-      }
-    }
-  };
+  const { store } = useContext(Context);
 
   return (
-    <div className="form-container" style={{ textAlign: "center" }}>
+    <Form>
+      <Form.Group>
+        <Form.Label>Электронная почта:</Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Электронная почта"
+          value={email}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setEmail(e.target.value)
+          }
+        />
+      </Form.Group>
 
-      <div className="form-group">
-        <input type="text" placeholder="Электронная почта" className="form-input" value={email} onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} />
-        {emailErr && <small style={{ color: "red" }}>{emailErr}</small>}
-      </div>
+      <Form.Group>
+        <Form.Label>Логин:</Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Логин"
+          value={name}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setName(e.target.value)
+          }
+        />
+      </Form.Group>
 
-      <div className="form-group">
-        <input type="text" placeholder="Логин" className="form-input" value={name} onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)} />
-        {nameErr && <small style={{ color: "red" }}>{nameErr}</small>}
-      </div>
+      <Form.Group>
+        <Form.Label>Пароль:</Form.Label>
+        <Form.Control
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
+        />
+      </Form.Group>
 
-      <div className="form-group">
-        <input type="password" placeholder="Пароль" className="form-input" value={password} onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} />
-        {passwordErr && <small style={{ color: "red" }}>{passwordErr}</small>}
-      </div>
+      <Button
+        variant="primary"
+        onClick={() => store.signup(email, name, password)}
+      >
+        Зарегистрироваться
+      </Button>
+    </Form>
+  );
+};
 
-      <button className={`btn-primary ${!!emailErr || !!nameErr || !!passwordErr ? 'disabled' : ''}`} onClick={handleRegister}>Зарегистрироваться</button>
-    </div>
-  )
-}
-
-export default Register;
+export default observer(Register);

@@ -1,28 +1,28 @@
-import React, { Component } from "react";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import Tab from "react-bootstrap/Tab";
+import Tabs from "react-bootstrap/Tabs";
 import Register from "./register";
 import Login from "./login";
-import "react-tabs/style/react-tabs.css";
-import "../../style/authorization.css";
 
+import "bootstrap/dist/css/bootstrap.css";
+import { observer } from "mobx-react-lite";
 
-export default class Authorization extends Component {
-  render() {
-    return (
-      <div className="authorization">
-        <Tabs className="tab">
-          <TabList>
-          <Tab className="tab-item">Войти</Tab>
-            <Tab className="tab-item">Регистрация</Tab>
-          </TabList>
-          <TabPanel>
-            <Login />
-          </TabPanel>
-          <TabPanel>
-            <Register />
-          </TabPanel>
-        </Tabs>
+const Authorization = () => {
+  return (
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-lg-6">
+          <Tabs defaultActiveKey="login" className="mt-5">
+            <Tab eventKey="login" title="Войти" className="w-50">
+              <Login />
+            </Tab>
+            <Tab eventKey="signup" title="Регистрация">
+              <Register />
+            </Tab>
+          </Tabs>
+        </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+export default observer(Authorization);
