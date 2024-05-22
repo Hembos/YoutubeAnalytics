@@ -368,3 +368,38 @@ class AddVideoToGroupView(GenericAPIView):
         video_group.videos.add(video)
 
         return Response(VideoGroupSerializer(video_group).data)
+
+
+class AddChannelToGroupView(GenericAPIView):
+    permission_classes = [IsValidated]
+
+    @swagger_auto_schema(
+        request_body=AddChannelToGroupSerializer,
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=ChannelGroupSerializer),
+                   status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
+    )
+    def post(self, request):
+        channel_group_id = request.POST.get("channel_group_id", None)
+        custom_url = request.POST.get("custom_url", None)
+
+        if custom_url is None:
+            return Response({"invalid data": "custom_url mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
+        if channel_group_id is None:
+            return Response({"invalid data": "channel_group_id mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            channel = Channel.objects.get(custom_url=custom_url)
+        except Channel.DoesNotExist:
+            return Response({"invalid data": f"No channel with custom_url = {custom_url}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+
+        try:
+            channel_group = ChannelGroup.objects.get(pk=channel_group_id)
+        except ChannelGroup.DoesNotExist:
+            return Response({"invalid data": f"No channel_group with channel_group_id = {channel_group_id}"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        channel_group.channel.add(channel)
+
+        return Response(ChannelGroupSerializer(channel_group).data)

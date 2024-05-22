@@ -15,6 +15,7 @@ class Channel(models.Model):
     title = models.TextField()
     video_count = models.IntegerField()
     view_count = models.IntegerField()
+    custom_url = models.TextField(unique=True)
 
     class Meta:
         db_table = 'tb_channel'
@@ -22,7 +23,7 @@ class Channel(models.Model):
 
 class ChannelGroup(models.Model):
     title = models.TextField()
-    channel = models.ManyToManyField(Channel, related_name="channel_group")
+    channel = models.ManyToManyField(Channel, related_name="channel_group",blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name="channel_group")
 
     class Meta:
