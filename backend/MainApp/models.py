@@ -90,6 +90,8 @@ class Request(models.Model):
 class CalculationResult(models.Model):
     result = models.TextField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name="calculation_result")
+    yt_id = models.TextField()
+    type = models.ForeignKey(RequestType, on_delete=models.DO_NOTHING)
 
     class Meta:
         db_table = 'tb_calculation_result'
