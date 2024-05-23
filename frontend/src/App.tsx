@@ -5,6 +5,7 @@ import { Context } from ".";
 import { observer } from "mobx-react-lite";
 import Header from "./components/header/Header";
 import Profile from "./components/profile/Profile";
+import Groups from "./components/group/Groups";
 
 function App() {
   const { store } = useContext(Context);
@@ -25,7 +26,16 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={store.isAuth ? <Header /> : <Authorization />}
+            element={
+              store.isAuth ? (
+                <div>
+                  <Header />
+                  <Groups />
+                </div>
+              ) : (
+                <Authorization />
+              )
+            }
           />
           <Route
             path="/profile"
