@@ -39,6 +39,14 @@ class ChannelGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
     serializer_class = ChannelGroupSerializer
 
+    def list(self, request, *args, **kwargs):
+        self.queryset = ChannelGroup.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = ChannelGroup.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         data["user"] = request.user.id
@@ -67,6 +75,14 @@ class VideoGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
     serializer_class = VideoGroupSerializer
 
+    def list(self, request, *args, **kwargs):
+        self.queryset = VideoGroup.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = VideoGroup.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         data["user"] = request.user.id
@@ -83,12 +99,19 @@ class RequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
     serializer_class = RequestSerializer
 
+    def list(self, request, *args, **kwargs):
+        self.queryset = Request.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = Request.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         data["user"] = request.user.id
         data["date_completion"] = None
         data["progress"] = 1
-
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -101,6 +124,14 @@ class CalculationResultViewSet(viewsets.ModelViewSet):
     queryset = CalculationResult.objects.all()
     permission_classes = [IsValidated]
     serializer_class = CalculationResultSerializer
+
+    def list(self, request, *args, **kwargs):
+        self.queryset = CalculationResult.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = CalculationResult.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
 
 
 def get_tokens_for_user(user):
@@ -378,7 +409,6 @@ class AddVideoToGroupView(GenericAPIView):
             return Response({"invalid data": f"No video with video_yt_id = {video_yt_id}"},
                             status=status.HTTP_400_BAD_REQUEST)
 
-
         try:
             video_group = VideoGroup.objects.get(pk=video_group_id)
         except VideoGroup.DoesNotExist:
@@ -412,7 +442,6 @@ class AddChannelToGroupView(GenericAPIView):
         except Channel.DoesNotExist:
             return Response({"invalid data": f"No channel with custom_url = {custom_url}"},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
         try:
             channel_group = ChannelGroup.objects.get(pk=channel_group_id)
