@@ -5,11 +5,16 @@ import { AuthResponse } from "../models/response/AuthResponse";
 import { API_URL } from "../http";
 import ProfileService from "../services/ProfileService";
 import { IProfile } from "../models/IProfile";
+import GroupService from "../services/GroupService";
+import { IVideoGroup } from "../models/IVideoGroup";
+import { IChannelGroup } from "../models/IChannelGroup";
 
 export default class Store {
   isAuth = false;
   isLoading = false;
   profile = {} as IProfile;
+  videoGroups = [] as Array<IVideoGroup>;
+  channelGroups = [] as Array<IChannelGroup>;
 
   constructor() {
     makeAutoObservable(this);
@@ -25,6 +30,22 @@ export default class Store {
 
   setProfile(profile: IProfile) {
     this.profile = profile;
+  }
+
+  setChannelGroups(channelGroups: Array<IChannelGroup>) {
+    this.channelGroups = channelGroups;
+  }
+
+  setVideoGroups(videoGroups: Array<IVideoGroup>) {
+    this.videoGroups = videoGroups;
+  }
+
+  addChannelGroup(channelGroup: IChannelGroup) {
+    this.channelGroups.push(channelGroup);
+  }
+
+  addVideoGroup(videoGroup: IVideoGroup) {
+    this.videoGroups.push(videoGroup);
   }
 
   async login(emailOrUsername: string, password: string) {
@@ -83,6 +104,31 @@ export default class Store {
         email: response.data.email,
         username: response.data.username,
       });
+    } catch (e: any) {
+      console.log(e.response?.data?.message);
+    }
+  }
+
+  async createGroup(title: string, type: string) {
+    try {
+      const response = await GroupService.createGroup(title, type);
+
+      if (type === "channel") this.addChannelGroup(response.data);
+      else if (type === "video") this.addVideoGroup(response.data);
+    } catch (e: any) {
+      console.log(e.response?.data?.message);
+    }
+  }
+
+  async getGroups(type: string) {
+    try {
+      if (type === "channel") {
+        const response = await GroupService.getChannelGroups();
+        this.setChannelGroups(response.data);
+      } else if (type === "video") {
+        const response = await GroupService.getVideoGroups();
+        this.setVideoGroups(response.data);
+      }
     } catch (e: any) {
       console.log(e.response?.data?.message);
     }

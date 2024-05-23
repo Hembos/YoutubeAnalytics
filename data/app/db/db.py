@@ -72,9 +72,9 @@ class DataBase:
         self.__db_connection.commit()
         
     def store_channel(self, channel: dict, channel_id: str) -> bool:
-        self.__db.execute("""insert into tb_channel(country, description, published_at, subscriber_count, title, video_count, view_count, yt_id, customUrl) values 
+        self.__db.execute("""insert into tb_channel(country, description, published_at, subscriber_count, title, video_count, view_count, yt_id, custom_url) values 
                           (%(country)s, %(description)s, %(publishedAt)s, %(subscriber_count)s, 
-                          %(title)s, %(video_count)s, %(view_count)s, %(yt_id)s, %(customUrl)s)""", 
+                          %(title)s, %(video_count)s, %(view_count)s, %(yt_id)s, %(customUrl)s) ON CONFLICT (yt_id) DO NOTHING""", 
                               {"country": channel["country"], "description": channel["description"],
                                "publishedAt": channel["publishedAt"], "subscriber_count": channel["subscriberCount"],
                                "title": channel["title"], "video_count": channel["videoCount"],
@@ -94,11 +94,11 @@ class DataBase:
     def store_video(self, video: dict, video_id: str) -> bool:
         self.__db.execute("""insert into tb_video(description, duration, like_count, published_at, view_count, comment_count, language, channel_id, yt_id) values 
                           (%(description)s, %(duration)s, %(like_count)s, %(published_at)s, 
-                          %(view_count)s, %(comment_count)s, %(language)s, %(channel_id)s, %(yt_id)s)""", 
+                          %(view_count)s, %(comment_count)s, %(language)s, %(channel_id)s, %(yt_id)s) ON CONFLICT (yt_id) DO NOTHING""", 
                               {"description": video["description"], "duration": video["duration"],
-                               "like_count": video["likeCount"], "published_at": video["publishedAt"],
-                               "view_count": video["viewCount"], "comment_count": video["commentCount"],
-                               "language": video["defaultLanguage"], "channel_id": video["channelId"], "yt_id": video_id,})
+                               "like_count": video["likeCount"] if video["likeCount"] else 0, "published_at": video["publishedAt"],
+                               "view_count": video["viewCount"] if video["viewCount"] else 0, "comment_count": video["commentCount"] if video["commentCount"] else 0,
+                               "language": video["defaultLanguage"] if video["defaultLanguage"] else 0, "channel_id": video["channelId"], "yt_id": video_id,})
         self.__db_connection.commit()
         
         return True
@@ -108,20 +108,20 @@ class DataBase:
             if not comment["isReply"]:
                 self.__db.execute("""insert into tb_comment(original_text, author_display_name, like_count, published_at, updated_at, total_reply_count, video_id, yt_id) values 
                                 (%(original_text)s, %(author_display_name)s, %(like_count)s, %(published_at)s, 
-                                %(updated_at)s, %(total_reply_count)s, %(video_id)s, %(yt_id)s)""",
-                                {"original_text": comments["textOriginal"], "author_display_name": comments["authorDisplayName"],
-                                    "like_count": comments["likeCount"], "published_at": comments["publishedAt"],
-                                    "updated_at": comments["updatedAt"], "total_reply_count": comments["totalReplyCount"],
-                                    "video_id": comments["videoId"], "yt_id": comment["id"],})
+                                %(updated_at)s, %(total_reply_count)s, %(video_id)s, %(yt_id)s) ON CONFLICT (yt_id) DO NOTHING""",
+                                {"original_text": comment["textOriginal"], "author_display_name": comment["authorDisplayName"],
+                                    "like_count": comment["likeCount"], "published_at": comment["publishedAt"],
+                                    "updated_at": comment["updatedAt"], "total_reply_count": comment["totalReplyCount"],
+                                    "video_id": comment["videoId"], "yt_id": comment["id"],})
                 self.__db_connection.commit()
             else:
                 self.__db.execute("""insert into tb_comment(original_text, author_display_name, like_count, published_at, updated_at, total_reply_count, video_id, yt_id) values 
                                 (%(original_text)s, %(author_display_name)s, %(like_count)s, %(published_at)s, 
-                                %(updated_at)s, %(total_reply_count)s, %(video_id)s, %(yt_id)s)""",
-                                {"original_text": comments["textOriginal"], "author_display_name": comments["authorDisplayName"],
-                                    "like_count": comments["likeCount"], "published_at": comments["publishedAt"],
-                                    "updated_at": comments["updatedAt"], "total_reply_count": 0,
-                                    "video_id": comments["videoId"], "yt_id": comment["id"],})
+                                %(updated_at)s, %(total_reply_count)s, %(video_id)s, %(yt_id)s) ON CONFLICT (yt_id) DO NOTHING""",
+                                {"original_text": comment["textOriginal"], "author_display_name": comment["authorDisplayName"],
+                                    "like_count": comment["likeCount"], "published_at": comment["publishedAt"],
+                                    "updated_at": comment["updatedAt"], "total_reply_count": 0,
+                                    "video_id": comment["videoId"], "yt_id": comment["id"],})
                 self.__db_connection.commit()
                 
                 # self.__db.execute("""insert into tb_comment_replies (from_comment_id, to_comment_id)
