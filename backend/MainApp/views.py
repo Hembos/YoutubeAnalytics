@@ -331,7 +331,7 @@ class SendVerificationLink(APIView):
         if request.user.is_verified:
             return Response({'error': 'User already verified'}, status=status.HTTP_400_BAD_REQUEST)
 
-        absurl = 'http://' + get_current_site(request).domain + reverse('email-verify')
+        absurl = 'https://' + get_current_site(request).domain + reverse('email-verify')
         params = {'email': request.user.email, 'token': request.user.token}
         url = absurl + '?' + urllib.parse.urlencode(params)
         email_body = 'Hi ' + request.user.username + ',\nUse the link below to verify your email \n' + url
@@ -384,6 +384,38 @@ class LogoutView(GenericAPIView):
                 return Response({"Error": str(terror)})
             token.blacklist()
         return Response(status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        request_body=ResetPasswordSerializer,
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response("Password successfully changed", Schema(
+            type=TYPE_OBJECT,
+            properties={
+                'success': Schema(
+                    type=TYPE_STRING
+                )
+            }
+        ), {"application/json": {
+            "success": "Password successfully changed"}}),
+                   })
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        old_password = serializer.validated_data.get('old_password', None)
+        new_password = serializer.validated_data.get('new_password', None)
+
+        user = authenticate(username=request.user.username, password=old_password)
+
+        if user is not None:
+            user.set_password(new_password)
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AddVideoToGroupView(GenericAPIView):

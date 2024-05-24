@@ -75,6 +75,7 @@ urlpatterns = [
     path('api/v1/signup/', SignUp.as_view()),
     path('api/v1/profile/', ProfileView.as_view()),
     path('api/v1/logout/', LogoutView.as_view()),
+    path('api/v1/reset-password/', ResetPasswordView.as_view()),
     path('api/v1/email-verify/', VerifyEmail.as_view(), name="email-verify"),
     path('api/v1/add-video-to-group/', AddVideoToGroupView.as_view()),
     path('api/v1/add-channel-to-group/', AddChannelToGroupView.as_view()),
