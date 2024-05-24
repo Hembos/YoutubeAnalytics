@@ -109,6 +109,14 @@ export default class Store {
     }
   }
 
+  async changePassword(oldPass: string, newPass: string) {
+    try {
+      await ProfileService.changePassword(oldPass, newPass);
+    } catch (e: any) {
+      console.log(e.response?.data?.message);
+    }
+  }
+
   async createGroup(title: string, type: string) {
     try {
       const response = await GroupService.createGroup(title, type);
