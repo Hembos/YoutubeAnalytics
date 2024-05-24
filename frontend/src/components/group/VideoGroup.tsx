@@ -61,19 +61,6 @@ const VideoGroup: React.FC<Props> = (props: Props) => {
               ))}
           </Row>
         ))}
-
-        {/* {Object.entries(videos).map(([videoId, video]) => (
-          <Card style={{ width: "18rem" }}>
-            <Card.Img
-              variant="top"
-              src={`https://i.ytimg.com/vi/${video.yt_id}/mqdefault.jpg`}
-            />
-            <Card.Body>
-              <Card.Title>{video.title}</Card.Title>
-              <Button variant="primary">Перейти</Button>
-            </Card.Body>
-          </Card>
-        ))} */}
       </div>
       <Button
         className="mx-3 my-3"

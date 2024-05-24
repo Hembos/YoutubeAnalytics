@@ -3,6 +3,7 @@ import { AxiosResponse } from "axios";
 import { ChannelGroupResponse } from "../models/response/ChannelGroupResponse";
 import { VideoGroupResponse } from "../models/response/VideogroupResponse";
 import { IVideo } from "../models/IVideo";
+import { IChannel } from "../models/IChannel";
 
 export default class GroupService {
   static async createGroup(
@@ -46,5 +47,26 @@ export default class GroupService {
 
   static async getVideosInGroup(groupId: number): Promise<AxiosResponse> {
     return $api.get(`video-group/${groupId}/`);
+  }
+
+  static async addChannelToGroup(
+    groupId: number,
+    custom_url: string
+  ): Promise<AxiosResponse<IChannel>> {
+    return $api.post(`add-channel-to-group/`, {
+      channel_group_id: groupId,
+      custom_url: custom_url,
+    });
+  }
+
+  static async downloadChannel(channelUrl: string): Promise<AxiosResponse> {
+    return $api.post("request/", {
+      type: 5,
+      data: `{"url": "${channelUrl}"}`,
+    });
+  }
+
+  static async getChannelsInGroup(groupId: number): Promise<AxiosResponse> {
+    return $api.get(`channel-group/${groupId}/`);
   }
 }
