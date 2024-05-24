@@ -39,6 +39,14 @@ class ChannelGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
     serializer_class = ChannelGroupSerializer
 
+    def list(self, request, *args, **kwargs):
+        self.queryset = ChannelGroup.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = ChannelGroup.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         data["user"] = request.user.id
@@ -67,6 +75,14 @@ class VideoGroupViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
     serializer_class = VideoGroupSerializer
 
+    def list(self, request, *args, **kwargs):
+        self.queryset = VideoGroup.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = VideoGroup.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         data["user"] = request.user.id
@@ -83,12 +99,19 @@ class RequestViewSet(viewsets.ModelViewSet):
     permission_classes = [IsValidated]
     serializer_class = RequestSerializer
 
+    def list(self, request, *args, **kwargs):
+        self.queryset = Request.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = Request.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
+
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
         data["user"] = request.user.id
         data["date_completion"] = None
         data["progress"] = 1
-
 
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
@@ -101,6 +124,14 @@ class CalculationResultViewSet(viewsets.ModelViewSet):
     queryset = CalculationResult.objects.all()
     permission_classes = [IsValidated]
     serializer_class = CalculationResultSerializer
+
+    def list(self, request, *args, **kwargs):
+        self.queryset = CalculationResult.objects.filter(user=request.user)
+        return super().list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        self.queryset = CalculationResult.objects.filter(user=request.user)
+        return super().retrieve(request, *args, **kwargs)
 
 
 def get_tokens_for_user(user):
@@ -300,7 +331,7 @@ class SendVerificationLink(APIView):
         if request.user.is_verified:
             return Response({'error': 'User already verified'}, status=status.HTTP_400_BAD_REQUEST)
 
-        absurl = 'http://' + get_current_site(request).domain + reverse('email-verify')
+        absurl = 'https://' + get_current_site(request).domain + reverse('email-verify')
         params = {'email': request.user.email, 'token': request.user.token}
         url = absurl + '?' + urllib.parse.urlencode(params)
         email_body = 'Hi ' + request.user.username + ',\nUse the link below to verify your email \n' + url
@@ -355,6 +386,38 @@ class LogoutView(GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class ResetPasswordView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        request_body=ResetPasswordSerializer,
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response("Password successfully changed", Schema(
+            type=TYPE_OBJECT,
+            properties={
+                'success': Schema(
+                    type=TYPE_STRING
+                )
+            }
+        ), {"application/json": {
+            "success": "Password successfully changed"}}),
+                   })
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        old_password = serializer.validated_data.get('old_password', None)
+        new_password = serializer.validated_data.get('new_password', None)
+
+        user = authenticate(username=request.user.username, password=old_password)
+
+        if user is not None:
+            user.set_password(new_password)
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class AddVideoToGroupView(GenericAPIView):
     permission_classes = [IsValidated]
 
@@ -377,7 +440,6 @@ class AddVideoToGroupView(GenericAPIView):
         except Video.DoesNotExist:
             return Response({"invalid data": f"No video with video_yt_id = {video_yt_id}"},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
         try:
             video_group = VideoGroup.objects.get(pk=video_group_id)
@@ -412,7 +474,6 @@ class AddChannelToGroupView(GenericAPIView):
         except Channel.DoesNotExist:
             return Response({"invalid data": f"No channel with custom_url = {custom_url}"},
                             status=status.HTTP_400_BAD_REQUEST)
-
 
         try:
             channel_group = ChannelGroup.objects.get(pk=channel_group_id)

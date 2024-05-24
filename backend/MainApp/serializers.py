@@ -81,3 +81,7 @@ class AddVideoToGroupSerializer(serializers.Serializer):
 class AddChannelToGroupSerializer(serializers.Serializer):
     channel_group_id = serializers.IntegerField()
     custom_url = serializers.CharField()
+
+class ResetPasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
