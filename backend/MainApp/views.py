@@ -138,11 +138,17 @@ class CalculationResultViewSet(viewsets.ModelViewSet):
     serializer_class = CalculationResultSerializer
 
     def list(self, request, *args, **kwargs):
+        yt_id = request.data.get("yt_id", None)
         self.queryset = CalculationResult.objects.filter(user=request.user)
+        if yt_id is not None:
+            self.queryset = self.queryset(yt_id=yt_id)
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
+        yt_id = request.data.get("yt_id", None)
         self.queryset = CalculationResult.objects.filter(user=request.user)
+        if yt_id is not None:
+            self.queryset = self.queryset(yt_id=yt_id)
         return super().retrieve(request, *args, **kwargs)
 
 
