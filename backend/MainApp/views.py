@@ -439,8 +439,8 @@ class AddVideoToGroupView(GenericAPIView):
                    status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
     )
     def post(self, request):
-        video_group_id = request.POST.get("video_group_id", None)
-        video_yt_id = request.POST.get("video_yt_id", None)
+        video_group_id = request.data.get("video_group_id", None)
+        video_yt_id = request.data.get("video_yt_id", None)
 
         if video_yt_id is None:
             return Response({"invalid data": "video_yt_id mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
@@ -473,8 +473,8 @@ class AddChannelToGroupView(GenericAPIView):
                    status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
     )
     def post(self, request):
-        channel_group_id = request.POST.get("channel_group_id", None)
-        custom_url = request.POST.get("custom_url", None)
+        channel_group_id = request.data.get("channel_group_id", None)
+        custom_url = request.data.get("custom_url", None)
 
         if custom_url is None:
             return Response({"invalid data": "custom_url mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
