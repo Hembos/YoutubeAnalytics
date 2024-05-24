@@ -435,7 +435,7 @@ class AddVideoToGroupView(GenericAPIView):
 
     @swagger_auto_schema(
         request_body=AddVideoToGroupSerializer,
-        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=VideoGroupSerializer),
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=VideoSerializer),
                    status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
     )
     def post(self, request):
@@ -461,7 +461,7 @@ class AddVideoToGroupView(GenericAPIView):
 
         video_group.videos.add(video)
 
-        return Response(VideoGroupSerializer(video_group).data)
+        return Response(VideoSerializer(video).data)
 
 
 class AddChannelToGroupView(GenericAPIView):
@@ -469,7 +469,7 @@ class AddChannelToGroupView(GenericAPIView):
 
     @swagger_auto_schema(
         request_body=AddChannelToGroupSerializer,
-        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=ChannelGroupSerializer),
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=ChannelSerializer),
                    status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
     )
     def post(self, request):
@@ -495,4 +495,4 @@ class AddChannelToGroupView(GenericAPIView):
 
         channel_group.channel.add(channel)
 
-        return Response(ChannelGroupSerializer(channel_group).data)
+        return Response(ChannelSerializer(channel).data)
