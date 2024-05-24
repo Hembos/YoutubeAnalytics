@@ -35,6 +35,8 @@ const Header: React.FC = () => {
           <Button
             variant="light"
             onClick={() => {
+              store.choosed_group_id = -1;
+              store.choosed_type = "";
               navigate("/");
             }}
           >

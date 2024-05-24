@@ -14,18 +14,22 @@ const ChangePasswordDialog: React.FC<Props> = (props: Props) => {
   const [oldPass, setOldPass] = useState("");
   const [newPass, setNewPass] = useState("");
 
-  const handleChangePassword = () => {
-    if (oldPass === "" || newPass === "") return;
-
-    props.onChangePassword(oldPass, newPass);
-
+  const onClose = () => {
     setOldPass("");
     setNewPass("");
     props.onChangeShowState(false);
   };
 
+  const handleChangePassword = () => {
+    if (oldPass === "" || newPass === "") return;
+
+    props.onChangePassword(oldPass, newPass);
+
+    onClose();
+  };
+
   return (
-    <Modal show={props.show} onHide={() => props.onChangeShowState(false)}>
+    <Modal show={props.show} onHide={onClose}>
       <Modal.Header closeButton>
         <Modal.Title>Изменить пароль</Modal.Title>
       </Modal.Header>
@@ -53,10 +57,7 @@ const ChangePasswordDialog: React.FC<Props> = (props: Props) => {
         <Button variant="secondary" onClick={handleChangePassword}>
           Изменить
         </Button>
-        <Button
-          variant="primary"
-          onClick={() => props.onChangeShowState(false)}
-        >
+        <Button variant="primary" onClick={onClose}>
           Отмена
         </Button>
       </Modal.Footer>

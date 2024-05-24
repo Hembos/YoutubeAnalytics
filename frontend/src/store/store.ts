@@ -8,6 +8,7 @@ import { IProfile } from "../models/IProfile";
 import GroupService from "../services/GroupService";
 import { IVideoGroup } from "../models/IVideoGroup";
 import { IChannelGroup } from "../models/IChannelGroup";
+import { IVideo } from "../models/IVideo";
 
 export default class Store {
   isAuth = false;
@@ -15,6 +16,9 @@ export default class Store {
   profile = {} as IProfile;
   videoGroups = [] as Array<IVideoGroup>;
   channelGroups = [] as Array<IChannelGroup>;
+  choosed_type = "" as string;
+  choosed_group_id = -1 as number;
+  videos = {} as { [key: string]: IVideo };
 
   constructor() {
     makeAutoObservable(this);
@@ -137,6 +141,37 @@ export default class Store {
         const response = await GroupService.getVideoGroups();
         this.setVideoGroups(response.data);
       }
+    } catch (e: any) {
+      console.log(e.response?.data?.message);
+    }
+  }
+
+  async addVideoToGroup(videoId: string) {
+    try {
+      const response = await GroupService.addVideoToGroup(
+        this.choosed_group_id,
+        videoId
+      );
+
+      this.videos[response.data.id] = response.data;
+    } catch (e: any) {
+      const response = e;
+      if (response.response.status === 400) {
+        await GroupService.downloadVideo(videoId);
+        alert(
+          "Создан запрос на скачивание видео. Попробуйте добавить его в группу позже"
+        );
+      }
+    }
+  }
+
+  async getVideosInGroup() {
+    try {
+      const response = await GroupService.getVideosInGroup(
+        this.choosed_group_id
+      );
+
+      this.videos = response.data["videos"];
     } catch (e: any) {
       console.log(e.response?.data?.message);
     }

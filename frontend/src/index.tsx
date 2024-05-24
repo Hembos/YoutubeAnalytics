@@ -22,8 +22,6 @@ root.render(
       store,
     }}
   >
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <App />
   </Context.Provider>
 );
