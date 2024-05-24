@@ -45,7 +45,12 @@ class ChannelGroupViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         self.queryset = ChannelGroup.objects.filter(user=request.user)
-        return super().retrieve(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        channel = {k: ChannelSerializer(Channel.objects.get(pk=k)).data for k in data["channel"]}
+        data["channel"] = channel
+        return Response(data)
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -86,7 +91,7 @@ class VideoGroupViewSet(viewsets.ModelViewSet):
         data = serializer.data
         print(data["videos"])
         videos = {k: VideoSerializer(Video.objects.get(pk=k)).data for k in data["videos"]}
-        data["videos"]=videos
+        data["videos"] = videos
 
         return Response(data)
 
