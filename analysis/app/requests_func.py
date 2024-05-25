@@ -1,5 +1,5 @@
 from config.requests_types import *
-from db.db import DataBase
+from data.app.db.db import DataBase
 from metrics.metric import *
 
 
@@ -8,15 +8,17 @@ def get_time_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
     video_id = data['videoId']
     comments = data['comments']
     metric_data_time = plot_counts_by_datetime(comments, video_id)
-    db.store_analisis(video_id, metric_data_time, GET_ANALYSIS_OF_TIME)
+    user_id = data['userId']
+    db.store_analisis(video_id, metric_data_time, GET_ANALYSIS_OF_TIME, user_id)
 
 
 def get_lang_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
     channel_id = data['channelId']
     video_id = data['videoId']
     comments = data['comments']
+    user_id = data['userId']
     metric_count_langs = plot_counts_langs(comments, video_id, analyser=analyser)
-    db.store_analisis(video_id, metric_count_langs, GET_ANALYSIS_OF_LANGUAGES)
+    db.store_analisis(video_id, metric_count_langs, GET_ANALYSIS_OF_LANGUAGES, user_id)
 
 
 def get_emotion_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
@@ -48,7 +50,7 @@ def get_word_map(data: dict, db: DataBase, analyser: Analyser) -> None:
     video_id = data['videoId']
     comments = data['comments']
     word_map = plot_word_map(comments, video_id, analyser=analyser)
-    db.store_analisis(video_id, word_map, GET_WORD_MAP)
+    db.store_analisis(video_id, word_map, GET_WORD_MAP, data['userId'])
 
 
 def get_popularity_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:

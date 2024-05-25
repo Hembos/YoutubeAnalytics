@@ -5,10 +5,10 @@ from collections import defaultdict
 from stop_words import safe_get_stop_words
 from wordcloud import WordCloud
 
-from app.emotion_analisis.analyser import Analyser
+from analysis.app.emotion_analisis.analyser import Analyser
 import numpy as np
 
-from app.metrics.plots import *
+from analysis.app.metrics.plots import *
 
 """
 Calculates metric -- number of comments depending on publication time
@@ -23,8 +23,8 @@ def plot_counts_by_datetime(comments: dict, video_name: str, make_plot: bool = F
     # Extract the time information and count occurrences cumulatively
     datetime_counts = Counter()
     for entry in comments.values():
-        datetime_entry = datetime.fromisoformat(entry['updatedAt'][:-1])  # Convert to datetime object
-        datetime_counts[datetime_entry] += 1
+        #datetime_entry = datetime.fromisoformat(entry[5][:-1])  # Convert to datetime object
+        datetime_counts[entry[5]] += 1
 
     # Sort the entries by datetime
     sorted_counts = sorted(datetime_counts.items(), key=lambda x: x[0])
@@ -140,8 +140,8 @@ def plot_word_map(comments: dict, video_name: str, make_plot: bool = False, anal
     freq = defaultdict(int)
     for key in analyser.result.keys():
         entry = analyser.result[key]
-        sentance = comments[key].get('textOriginal', '')
-        words = "".join(c for c in sentance if c.isalnum() or c.isspace())
+        sentence = comments[key][1] if comments[key][1] is not None else ''
+        words = "".join(c for c in sentence if c.isalnum() or c.isspace())
         words = words.lower().split()
         for word in words:
             freq[word] += 1
@@ -188,14 +188,14 @@ def create_popularity_metrics(comments: dict,video_info:dict, video_name: str, a
         # calculate the first derivative of the count over time
         derivatives = [1.0 / deltas[i] for i in
                        range(len(cumulative_counts) - 1)]
-        counts_coeff = int(np.log2(derivatives) if comments_size != 1 else 1)
+        counts_coeff = int(np.log2(comments_size) if comments_size != 1 else 1)
         comments_time_comp = np.mean(derivatives[:-counts_coeff])
         if comments_time_comp < 1:
             comments_time_comp = 1
     spam = 1+np.abs(comments_count - comments_size)/(max(comments_count, comments_size))
     time_delta = (datetime.now(timezone.utc) - puplished_at).total_seconds() / 60.0
     time_coeff = (likes_count + view_count*0.01)/time_delta
-    comment_coeff = comments_size * spam * comments_time_comp
+    comment_coeff = spam * comments_time_comp
     em_coeff = (metric_neq_pos['Positive Comments'] + metric_neq_pos['Negative Comments'])/comments_size
     popularity = time_coeff + \
                  + favorite_count*25 + comment_coeff * em_coeff
