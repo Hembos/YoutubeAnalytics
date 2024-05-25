@@ -45,7 +45,7 @@ class DataBase:
         return True
 
     def get_scraper_requests(self, min_type, max_type, num_requests) -> list:
-        self.__db.execute("""select id, type_id, data, progress, user_id from tb_request where type_id<%(max_type)s 
+        self.__db.execute("""select id, type_id, data, progress, user_id from tb_request where type_id<=%(max_type)s 
                           and type_id>=%(min_type)s and progress>%(progress)s limit %(num_requests)s""",
                           {"min_type": min_type, "max_type": max_type, "num_requests": num_requests, "progress": 0})
         result = self.__db.fetchall()
@@ -79,11 +79,11 @@ class DataBase:
     def store_channel(self, channel: dict, channel_id: str) -> bool:
         self.__db.execute("""insert into tb_channel(country, description, published_at, subscriber_count, title, video_count, view_count, yt_id, custom_url) values 
                           (%(country)s, %(description)s, %(publishedAt)s, %(subscriber_count)s, 
-                          %(title)s, %(video_count)s, %(view_count)s, %(yt_id)s, %(customUrl)s) ON CONFLICT (yt_id) DO NOTHING""",
-                          {"country": channel["country"], "description": channel["description"],
-                           "publishedAt": channel["publishedAt"], "subscriber_count": channel["subscriberCount"],
-                           "title": channel["title"], "video_count": channel["videoCount"],
-                           "view_count": channel["viewCount"], "yt_id": channel_id, "customUrl": channel["customUrl"]})
+                          %(title)s, %(video_count)s, %(view_count)s, %(yt_id)s, %(customUrl)s) ON CONFLICT (yt_id) DO NOTHING""", 
+                              {"country": channel["country"] if channel["country"] else "", "description": channel["description"],
+                               "publishedAt": channel["publishedAt"], "subscriber_count": channel["subscriberCount"],
+                               "title": channel["title"], "video_count": channel["videoCount"],
+                               "view_count": channel["viewCount"], "yt_id": channel_id, "customUrl": channel["customUrl"]})
         self.__db_connection.commit()
 
         return True
@@ -97,16 +97,13 @@ class DataBase:
         self.__db_connection.commit()
 
     def store_video(self, video: dict, video_id: str) -> bool:
-        self.__db.execute("""insert into tb_video(description, duration, like_count, published_at, view_count, comment_count, language, channel_id, yt_id) values 
+        self.__db.execute("""insert into tb_video(description, duration, like_count, published_at, view_count, comment_count, language, channel_id, yt_id, title) values 
                           (%(description)s, %(duration)s, %(like_count)s, %(published_at)s, 
-                          %(view_count)s, %(comment_count)s, %(language)s, %(channel_id)s, %(yt_id)s) ON CONFLICT (yt_id) DO NOTHING""",
-                          {"description": video["description"], "duration": video["duration"],
-                           "like_count": video["likeCount"] if video["likeCount"] else 0,
-                           "published_at": video["publishedAt"],
-                           "view_count": video["viewCount"] if video["viewCount"] else 0,
-                           "comment_count": video["commentCount"] if video["commentCount"] else 0,
-                           "language": video["defaultLanguage"] if video["defaultLanguage"] else 0,
-                           "channel_id": video["channelId"], "yt_id": video_id, })
+                          %(view_count)s, %(comment_count)s, %(language)s, %(channel_id)s, %(yt_id)s, %(title)s) ON CONFLICT (yt_id) DO NOTHING""", 
+                              {"description": video["description"], "duration": video["duration"],
+                               "like_count": video["likeCount"] if video["likeCount"] else 0, "published_at": video["publishedAt"],
+                               "view_count": video["viewCount"] if video["viewCount"] else 0, "comment_count": video["commentCount"] if video["commentCount"] else 0,
+                               "language": video["defaultLanguage"] if video["defaultLanguage"] else 0, "channel_id": video["channelId"], "yt_id": video_id, "title": video["title"]})
         self.__db_connection.commit()
 
         return True

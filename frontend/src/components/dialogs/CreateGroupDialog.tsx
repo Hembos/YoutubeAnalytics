@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import { observer } from "mobx-react-lite";
@@ -14,18 +14,22 @@ const CreateGroupDialog: React.FC<Props> = (props: Props) => {
   const [type, setType] = useState("channel");
   const [title, setTitle] = useState("");
 
-  const handleCreate = () => {
-    if (title === "") return;
-
-    props.onCreateGroup(title, type);
-
+  const onClose = () => {
     setTitle("");
     setType("channel");
     props.onChangeShowState(false);
   };
 
+  const handleCreate = () => {
+    if (title === "") return;
+
+    props.onCreateGroup(title, type);
+
+    onClose();
+  };
+
   return (
-    <Modal show={props.show} onHide={() => props.onChangeShowState(false)}>
+    <Modal show={props.show} onHide={onClose}>
       <Modal.Header closeButton>
         <Modal.Title>Создание группы</Modal.Title>
       </Modal.Header>
@@ -55,10 +59,7 @@ const CreateGroupDialog: React.FC<Props> = (props: Props) => {
         <Button variant="secondary" onClick={handleCreate}>
           Создать
         </Button>
-        <Button
-          variant="primary"
-          onClick={() => props.onChangeShowState(false)}
-        >
+        <Button variant="primary" onClick={onClose}>
           Отмена
         </Button>
       </Modal.Footer>

@@ -45,7 +45,12 @@ class ChannelGroupViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         self.queryset = ChannelGroup.objects.filter(user=request.user)
-        return super().retrieve(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        channel = {k: ChannelSerializer(Channel.objects.get(pk=k)).data for k in data["channel"]}
+        data["channel"] = channel
+        return Response(data)
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -81,7 +86,14 @@ class VideoGroupViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         self.queryset = VideoGroup.objects.filter(user=request.user)
-        return super().retrieve(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        print(data["videos"])
+        videos = {k: VideoSerializer(Video.objects.get(pk=k)).data for k in data["videos"]}
+        data["videos"] = videos
+
+        return Response(data)
 
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -126,11 +138,17 @@ class CalculationResultViewSet(viewsets.ModelViewSet):
     serializer_class = CalculationResultSerializer
 
     def list(self, request, *args, **kwargs):
+        yt_id = request.data.get("yt_id", None)
         self.queryset = CalculationResult.objects.filter(user=request.user)
+        if yt_id is not None:
+            self.queryset = self.queryset(yt_id=yt_id)
         return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
+        yt_id = request.data.get("yt_id", None)
         self.queryset = CalculationResult.objects.filter(user=request.user)
+        if yt_id is not None:
+            self.queryset = self.queryset(yt_id=yt_id)
         return super().retrieve(request, *args, **kwargs)
 
 
@@ -331,7 +349,7 @@ class SendVerificationLink(APIView):
         if request.user.is_verified:
             return Response({'error': 'User already verified'}, status=status.HTTP_400_BAD_REQUEST)
 
-        absurl = 'http://' + get_current_site(request).domain + reverse('email-verify')
+        absurl = 'https://' + get_current_site(request).domain + reverse('email-verify')
         params = {'email': request.user.email, 'token': request.user.token}
         url = absurl + '?' + urllib.parse.urlencode(params)
         email_body = 'Hi ' + request.user.username + ',\nUse the link below to verify your email \n' + url
@@ -386,17 +404,49 @@ class LogoutView(GenericAPIView):
         return Response(status=status.HTTP_200_OK)
 
 
+class ResetPasswordView(GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        request_body=ResetPasswordSerializer,
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response("Password successfully changed", Schema(
+            type=TYPE_OBJECT,
+            properties={
+                'success': Schema(
+                    type=TYPE_STRING
+                )
+            }
+        ), {"application/json": {
+            "success": "Password successfully changed"}}),
+                   })
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        old_password = serializer.validated_data.get('old_password', None)
+        new_password = serializer.validated_data.get('new_password', None)
+
+        user = authenticate(username=request.user.username, password=old_password)
+
+        if user is not None:
+            user.set_password(new_password)
+            user.save()
+            return Response(status=status.HTTP_200_OK)
+
+        return Response({"error": "Invalid password"}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class AddVideoToGroupView(GenericAPIView):
     permission_classes = [IsValidated]
 
     @swagger_auto_schema(
         request_body=AddVideoToGroupSerializer,
-        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=VideoGroupSerializer),
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=VideoSerializer),
                    status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
     )
     def post(self, request):
-        video_group_id = request.POST.get("video_group_id", None)
-        video_yt_id = request.POST.get("video_yt_id", None)
+        video_group_id = request.data.get("video_group_id", None)
+        video_yt_id = request.data.get("video_yt_id", None)
 
         if video_yt_id is None:
             return Response({"invalid data": "video_yt_id mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
@@ -417,7 +467,7 @@ class AddVideoToGroupView(GenericAPIView):
 
         video_group.videos.add(video)
 
-        return Response(VideoGroupSerializer(video_group).data)
+        return Response(VideoSerializer(video).data)
 
 
 class AddChannelToGroupView(GenericAPIView):
@@ -425,12 +475,12 @@ class AddChannelToGroupView(GenericAPIView):
 
     @swagger_auto_schema(
         request_body=AddChannelToGroupSerializer,
-        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=ChannelGroupSerializer),
+        responses={status.HTTP_200_OK: drf_yasg.openapi.Response('successfully added', schema=ChannelSerializer),
                    status.HTTP_400_BAD_REQUEST: drf_yasg.openapi.Response('invalid data')}
     )
     def post(self, request):
-        channel_group_id = request.POST.get("channel_group_id", None)
-        custom_url = request.POST.get("custom_url", None)
+        channel_group_id = request.data.get("channel_group_id", None)
+        custom_url = request.data.get("custom_url", None)
 
         if custom_url is None:
             return Response({"invalid data": "custom_url mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
@@ -451,4 +501,4 @@ class AddChannelToGroupView(GenericAPIView):
 
         channel_group.channel.add(channel)
 
-        return Response(ChannelGroupSerializer(channel_group).data)
+        return Response(ChannelSerializer(channel).data)

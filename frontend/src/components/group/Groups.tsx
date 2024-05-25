@@ -14,6 +14,16 @@ const Groups: React.FC = () => {
     store.createGroup(title, type);
   };
 
+  const chooseChannelGroup = (id: number) => {
+    store.choosed_type = "channel";
+    store.choosed_group_id = id;
+  };
+
+  const chooseVideoGroup = (id: number) => {
+    store.choosed_type = "video";
+    store.choosed_group_id = id;
+  };
+
   useEffect(() => {
     if (localStorage.getItem("token")) {
       store.getGroups("channel");
@@ -27,12 +37,20 @@ const Groups: React.FC = () => {
         <Form.Group className="my-3 mx-3">
           <Form.Label>Группы каналов</Form.Label>
           <br />
-          <Group groups={store.channelGroups} elemsPerRow={10}></Group>
+          <Group
+            groups={store.channelGroups}
+            elemsPerRow={10}
+            onChooseGroup={chooseChannelGroup}
+          ></Group>
         </Form.Group>
         <Form.Group id="channel_group" className="my-3 mx-3">
           <Form.Label>Группы видео</Form.Label>
           <br />
-          <Group groups={store.videoGroups} elemsPerRow={10}></Group>
+          <Group
+            groups={store.videoGroups}
+            elemsPerRow={10}
+            onChooseGroup={chooseVideoGroup}
+          ></Group>
         </Form.Group>
         <Button
           className="mx-3 my-3"

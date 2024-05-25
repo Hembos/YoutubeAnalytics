@@ -8,8 +8,9 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import ButtonToolbar from "react-bootstrap/ButtonToolbar";
 
 interface Props {
-  groups: Array<{ title: string }>;
+  groups: Array<{ id: number; title: string }>;
   elemsPerRow: number;
+  onChooseGroup: (id: number) => void;
 }
 
 const Group: React.FC<Props> = (props: Props) => {
@@ -32,8 +33,12 @@ const Group: React.FC<Props> = (props: Props) => {
                   props.elemsPerRow * (row + 1)
               )
               .map((group) => (
-                <Col>
-                  <Button className="mx-3" variant="light">
+                <Col key={group.id}>
+                  <Button
+                    className="mx-3"
+                    variant="light"
+                    onClick={() => props.onChooseGroup(group.id)}
+                  >
                     <img alt="" width="100" height="100" src={folder_icon} />
                     <br />
                     {group.title}

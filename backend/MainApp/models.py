@@ -40,6 +40,7 @@ class Video(models.Model):
     view_count = models.IntegerField()
     comment_count = models.IntegerField()
     language = models.TextField()
+    title = models.TextField(default="")
 
     class Meta:
         db_table = 'tb_video'

@@ -6,6 +6,7 @@ import { observer } from "mobx-react-lite";
 import Header from "./components/header/Header";
 import Profile from "./components/profile/Profile";
 import Groups from "./components/group/Groups";
+import Main from "./components/Main";
 
 function App() {
   const { store } = useContext(Context);
@@ -30,7 +31,7 @@ function App() {
               store.isAuth ? (
                 <div>
                   <Header />
-                  <Groups />
+                  <Main />
                 </div>
               ) : (
                 <Authorization />
