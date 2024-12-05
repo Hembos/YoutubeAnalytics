@@ -8,11 +8,13 @@ from core.youtube import Youtube
 import queue
 from core.requests_func import requests_func, requests_quota_size
 import json
+import time
 
 
 MAX_TASKS_NUM = 100
 
-port = db_port
+port = 5432
+ssh_connection = False
 if ssh_connection:
    server = SSHTunnelForwarder(ssh_ip, ssh_username=ssh_username,
                                        ssh_password=ssh_password, remote_bind_address=(db_ip, db_port))
@@ -34,6 +36,7 @@ def main(db: DataBase) -> None:
             requests = db.get_scraper_requests(0, 6, MAX_TASKS_NUM)
 
          if len(requests) == 0:
+            time.sleep(10)
             continue
 
          request = requests.pop(0)
@@ -49,6 +52,7 @@ def main(db: DataBase) -> None:
          new_youtube_api = db.get_available_api(request_quota_size)
          
          if not new_youtube_api:
+            time.sleep(10)
             continue
          
          if youtube_api is None or youtube_api["key"] != new_youtube_api["key"]:
