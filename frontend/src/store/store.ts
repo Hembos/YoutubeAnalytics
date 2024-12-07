@@ -21,6 +21,7 @@ export default class Store {
   choosed_group_id = -1 as number;
   videos = {} as { [key: string]: IVideo };
   channels = {} as { [key: string]: IChannel };
+  choosed_element_id = -1 as number;
 
   constructor() {
     makeAutoObservable(this);

@@ -37,6 +37,7 @@ const Header: React.FC = () => {
             onClick={() => {
               store.choosed_group_id = -1;
               store.choosed_type = "";
+              store.choosed_element_id = -1;
               navigate("/");
             }}
           >
