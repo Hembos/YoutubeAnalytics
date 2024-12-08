@@ -15,6 +15,7 @@ class DataBase:
     def create_connection(self, port) -> bool:
         self.__db_connection = psycopg2.connect(dbname=database_name, user=db_username, password=db_password,
                                                 host=db_ip, port=port)
+
         self.__db = self.__db_connection.cursor()
 
         logging.info("Database connection created")

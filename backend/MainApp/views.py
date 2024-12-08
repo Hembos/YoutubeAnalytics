@@ -483,19 +483,23 @@ class AddChannelToGroupView(GenericAPIView):
         custom_url = request.data.get("custom_url", None)
 
         if custom_url is None:
+            print(1)
             return Response({"invalid data": "custom_url mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
         if channel_group_id is None:
+            print(2)
             return Response({"invalid data": "channel_group_id mustn't be empty"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             channel = Channel.objects.get(custom_url=custom_url)
         except Channel.DoesNotExist:
+            print(3)
             return Response({"invalid data": f"No channel with custom_url = {custom_url}"},
                             status=status.HTTP_400_BAD_REQUEST)
 
         try:
             channel_group = ChannelGroup.objects.get(pk=channel_group_id)
         except ChannelGroup.DoesNotExist:
+            print(4)
             return Response({"invalid data": f"No channel_group with channel_group_id = {channel_group_id}"},
                             status=status.HTTP_400_BAD_REQUEST)
 
