@@ -1,7 +1,8 @@
 
 from collections.abc import Callable
 
-from app.db.db import DataBase
+from data.app.db.db import DataBase
+from data.app.main import port
 
 
 class Loader:
@@ -29,7 +30,7 @@ class Loader:
     '''
     def load_channel(self, channel_id) -> bool:
         if self._is_test:
-            self.db.create_connection()
+            self.db.create_connection(port)
         if channel_id in self.channels.keys():
             return True
         videos = self.db.get_videos(channel_id)
@@ -51,15 +52,16 @@ class Loader:
 
     def load_video(self, video_id: str):
         if self._is_test:
-            self.db.create_connection()
+            self.db.create_connection(port)
         if video_id in self.videos:
             return self.videos[video_id]
         self.videos[video_id] = dict()
-        self.videos[video_id] = self.db.get_video(video_id)
+        self.videos[video_id] = {video_id : self.db.get_video(video_id)}
         self.videos[video_id]['comments'] = self.db.get_comments(video_id)
+        self.videos[video_id]['comments'] = {i[8]:i for i in self.videos[video_id]['comments']}
         if self._is_test:
             self.db.close_connection()
-        return  self.videos[video_id]
+        return self.videos[video_id]
 
     def get_data_comments(self, channel_id, video_id):
         comments = []
@@ -68,8 +70,8 @@ class Loader:
         if video_id in self.videos:
             comments = self.videos[video_id]['comments']
         all_comments = {}
-        for comment in comments:
-            all_comments[comment['id']] = comment
+        for comment_yid in comments:
+            all_comments[comment_yid] = comments[comment_yid]
         return all_comments
 
     def get_video_info(self, video_id, channel_id):

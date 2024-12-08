@@ -1,10 +1,11 @@
-from config.quota_size import *
-from config.requests_types import *
-from core.youtube import Youtube
+from data.app.config.quota_size import *
+from data.app.config.requests_types import *
+from data.app.core.youtube import Youtube
 from math import ceil
 
-from db.db import DataBase
 import json
+
+from data.app.db.db import DataBase
 
 
 def get_channel_by_id(youtube: Youtube, data: dict, db: DataBase, user_id) -> None:

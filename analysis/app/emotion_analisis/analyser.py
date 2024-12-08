@@ -34,7 +34,7 @@ class Analyser:
         frequency = defaultdict(int)
         for entry in comments.values():
             # todo add translation
-            text = entry['textOriginal']
+            text = entry[1]
             ans = dict()
             if len(text) > 400:
                 text = text[:400]
@@ -58,7 +58,7 @@ class Analyser:
                 words = words.lower().split()
                 for word in words:
                     frequency[word] += 1
-            res[entry['id']] = ans
+            res[entry[8]] = ans
         if analysis_types.get('word_count') is not None:
             res['word_count'] = frequency
         self.result = res

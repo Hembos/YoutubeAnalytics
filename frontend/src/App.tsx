@@ -7,9 +7,12 @@ import Header from "./components/header/Header";
 import Profile from "./components/profile/Profile";
 import Groups from "./components/group/Groups";
 import Main from "./components/Main";
+import { PlotPage } from "./components/PlotPage";
 
 function App() {
   const { store } = useContext(Context);
+
+
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
@@ -45,6 +48,19 @@ function App() {
                 <div>
                   <Header />
                   <Profile />
+                </div>
+              ) : (
+                <Authorization />
+              )
+            }
+          />
+           <Route
+            path="/analysis/:ytId"
+            element={
+              store.isAuth ? (
+                <div>
+                  <Header />
+                  <PlotPage />
                 </div>
               ) : (
                 <Authorization />
