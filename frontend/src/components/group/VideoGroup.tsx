@@ -8,6 +8,7 @@ import Card from "react-bootstrap/Card";
 import { IVideo } from "../../models/IVideo";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import ButtonToolbar from "react-bootstrap/ButtonToolbar";
+import { useNavigate } from "react-router-dom";
 
 interface Props {}
 
@@ -16,7 +17,7 @@ const VideoGroup: React.FC<Props> = (props: Props) => {
   const [showAddToGroupDialog, setShowAddToGroupDialog] = useState(false);
   const [videos, setVideos] = useState({} as { [key: string]: IVideo });
   const [currentPage, setCurrentPage] = useState(1);
-
+  const navigate = useNavigate();
   const addToGroup = (videoId: string) => {
     store.addVideoToGroup(videoId);
   };
@@ -55,7 +56,9 @@ const VideoGroup: React.FC<Props> = (props: Props) => {
                   />
                   <Card.Body>
                     <Card.Title>{video.title}</Card.Title>
-                    <Button variant="primary">Перейти</Button>
+                    <Button variant="primary"
+                    onClick={() => navigate("/analysis/" + video.yt_id)}
+                    >Перейти</Button>
                   </Card.Body>
                 </Card>
               ))}
