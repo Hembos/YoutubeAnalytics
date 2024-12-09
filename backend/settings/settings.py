@@ -27,7 +27,7 @@ SECRET_KEY = '8hhn4pb)r%fgyo#x)q=)%hpg*!c!^8hdy#m&owdr86byrg2&!8via3uchz$^wgz7w0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*","92.63.102.92"]
 
 
 CORS_ALLOW_CREDENTIALS = True
@@ -153,7 +153,7 @@ REST_FRAMEWORK = {
 
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=500),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,

@@ -1,6 +1,8 @@
+import json
 import unittest
 
 from matplotlib import pyplot as plt
+from matplotlib.dates import num2date
 
 from app.db.db import DataBase
 from app.emotion_analisis.analyser import Analyser
@@ -122,5 +124,44 @@ class TestAnalisis(unittest.TestCase):
         collector = Collector(db)
         collector.collect_metric(7, ch_id)
         db.close_connection()
+
+    def test_collect_big_video(self):
+        # our channel
+        ch_id = 'UCLXo7UDZvByw2ixzpQCufnA'
+        db = DataBase()
+        db.create_connection()
+        collector = Collector(db)
+        collector.collect_metric(7, ch_id)
+        db.close_connection()
+    def test_graph_3d(self):
+        with open(f'C:\\Users\\Aleksandr\\Downloads\\Telegram Desktop\\output1.txt', 'r') as file:
+            data = json.load(file)
+            x = np.array(data["date"])
+            # arr1inds = x.argsort()
+            x = np.sort(x)
+            x_t = num2date(x)
+            y = np.array(data["count"])
+            # Вычисляем плотность распределения точек с помощью функции `gaussian_kde`
+            from scipy.stats import gaussian_kde
+            xy = np.vstack([x, y])
+            density = gaussian_kde(xy)(xy)
+
+            # Создаем новую фигуру и оси для графика
+            fig, ax = plt.subplots()
+
+            # Используем scatter plot для отображения точек с учетом плотности распределения
+            ax.scatter(x_t, y, c=density, cmap='viridis', edgecolors='black')
+
+            # Добавляем цветовую шкалу
+            cbar = plt.colorbar(mappable=None, cax=None, ax=None)
+            cbar.set_label('Density')
+
+            # Добавляем подписи для осей
+            ax.set_xlabel('X')
+            ax.set_ylabel('Y')
+
+            # Отображаем график
+            plt.savefig('big.png')
+
 if __name__ == '__main__':
     unittest.main()
