@@ -56,6 +56,7 @@ class Comment(models.Model):
     updated_at = models.DateTimeField()
     total_reply_count = models.IntegerField()
     replies = models.ManyToManyField('self')
+    emotions = models.TextField(default=None, null=True, blank=True)
 
     class Meta:
         db_table = 'tb_comment'
