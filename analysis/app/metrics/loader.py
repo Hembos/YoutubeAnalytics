@@ -1,8 +1,6 @@
 
-from collections.abc import Callable
 
-from data.app.db.db import DataBase
-from data.app.main import port
+from db.db import DataBase
 
 
 class Loader:
@@ -30,7 +28,7 @@ class Loader:
     '''
     def load_channel(self, channel_id) -> bool:
         if self._is_test:
-            self.db.create_connection(port)
+            self.db.create_connection(22)
         if channel_id in self.channels.keys():
             return True
         videos = self.db.get_videos(channel_id)
@@ -52,7 +50,7 @@ class Loader:
 
     def load_video(self, video_id: str):
         if self._is_test:
-            self.db.create_connection(port)
+            self.db.create_connection(22)
         if video_id in self.videos:
             return self.videos[video_id]
         self.videos[video_id] = dict()

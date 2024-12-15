@@ -1,22 +1,16 @@
-import logging
-import time
 from collections import defaultdict
 
-from stop_words import safe_get_stop_words
-from wordcloud import WordCloud
-
-from analysis.app.emotion_analisis.analyser import Analyser
 import numpy as np
-
-from analysis.app.metrics.plots import *
+from emotion_analisis.analyser import Analyser
+from metrics.plots import *
+from stop_words import safe_get_stop_words
 
 """
 Calculates metric -- number of comments depending on publication time
 """
 
-import matplotlib.pyplot as plt
-from datetime import datetime, timezone
 from collections import Counter
+from datetime import datetime, timezone
 
 
 def plot_counts_by_datetime(comments: dict, video_name: str, make_plot: bool = False, return_count=False) -> list:
@@ -75,6 +69,7 @@ def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False
         analyser.analyse_comments(comments, d_type)
     types = ['others', 'joy', 'sadness', 'anger', 'surprise', 'disgust', 'fear']
     counts = dict(zip(types, [0] * len(types)))
+    print(counts)
     for entry in analyser.result.values():
         for t in types:
             if entry['emotion'].output == t:

@@ -1,5 +1,5 @@
 from config.requests_types import *
-from data.app.db.db import DataBase
+from db.db import DataBase
 from metrics.metric import *
 
 

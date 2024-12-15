@@ -1,14 +1,12 @@
 import json
 import time
 
-from sshtunnel import SSHTunnelForwarder
-
-from data.app.db.config import *
-from data.app.db.db import DataBase
+from db.config import *
+from db.db import DataBase
 from emotion_analisis.analyser import Analyser
 from metrics.loader import Loader
-
 from requests_func import requests_func
+from sshtunnel import SSHTunnelForwarder
 
 
 def check_video(video_id, db: DataBase) -> bool:

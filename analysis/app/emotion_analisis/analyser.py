@@ -1,10 +1,11 @@
+import os
 from collections import defaultdict
 
 import torch
 from pysentimiento import create_analyzer
 from pysentimiento.analyzer import AnalyzerOutput
-import os
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
+from transformers import (AutoModelForSequenceClassification, AutoTokenizer,
+                          pipeline)
 
 
 class Analyser:
@@ -65,6 +66,7 @@ class Analyser:
 
         # Create the AnalyzerOutput
         output = AnalyzerOutput(probas=probas_dict, sentence=data, context=None)
+        print(output)
         return output
 
     def analyse_hate_speech(self, data: str, lang='en'):

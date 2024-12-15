@@ -1,9 +1,10 @@
 import json
+import logging
 from datetime import date, datetime
-from data.app.db.config import *
+
 # from db.config.collections_names import *
 import psycopg2
-import logging
+from db.config import *
 
 
 class DataBase:
@@ -192,6 +193,7 @@ class DataBase:
             'type': param,
             'updated': datetime.today().isoformat()
         }
+        print("***",data)
         filter_query = "SELECT * FROM tb_calculation_result WHERE yt_id = %s AND type_id = %s AND user_id = %s"
         self.__db.execute(filter_query, (element_id, param, user_id))
         exists = self.__db.fetchone()
