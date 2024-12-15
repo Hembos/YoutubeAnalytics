@@ -11,6 +11,7 @@ from drf_yasg.openapi import Schema, TYPE_OBJECT, TYPE_STRING
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,6 +23,12 @@ import urllib.parse
 import settings.settings
 from MainApp.serializers import *
 from rest_framework import viewsets, permissions, status
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
 
 
 class IsValidated(BasePermission):
@@ -74,6 +81,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects
     permission_classes = [permissions.AllowAny]
     serializer_class = CommentSerializer
+    pagination_class = StandardResultsSetPagination
 
     @swagger_auto_schema(
         manual_parameters=[
