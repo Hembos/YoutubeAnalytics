@@ -42,8 +42,6 @@ class Analyser:
         # Convert logits to probabilities
         probabilities = torch.nn.functional.softmax(logits, dim=1)
 
-        # Get the predicted label
-        predicted_label = torch.argmax(probabilities, dim=1).item()
 
         label_to_emotion = {
             0: "sadness",
@@ -62,10 +60,12 @@ class Analyser:
 
         # Map probabilities to their labels
         probas_dict = {label_to_emotion[i]: prob.item() for i, prob in enumerate(probabilities)}
-
+        # Get the predicted label
+        predicted_label = max(probabilities)
         # Create the AnalyzerOutput
         output = AnalyzerOutput(probas=probas_dict, sentence=data, context=None)
-        return output
+        print(output)
+        return output, predicted_label
 
     def analyse_hate_speech(self, data: str, lang='en'):
         return self._hate_speech_analyzer.predict(data)
@@ -76,8 +76,7 @@ class Analyser:
     def analyse_comments(self, comments: dict, analysis_types: dict):
         res = dict()
         frequency = defaultdict(int)
-        for entry in comments.values():
-            # todo add translation
+        for key, entry in comments.values():
             text = entry[1]
             ans = dict()
             if len(text) > 256:
@@ -95,8 +94,10 @@ class Analyser:
                 hate = self.analyse_hate_speech(text)
                 ans['hate'] = hate
             if analysis_types.get('emotion') is not None:
-                emotion = self.analyse_emotion(text)
+                emotion, label = self.analyse_emotion(text)
+                comments[key] = label
                 ans['emotion'] = emotion
+
             if analysis_types.get('word_count') is not None:
                 words = "".join(c for c in text if c.isalnum() or c.isspace())
                 words = words.lower().split()
