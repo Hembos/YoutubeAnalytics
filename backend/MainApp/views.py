@@ -70,9 +70,30 @@ class VideoViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
+    queryset = Comment.objects
     permission_classes = [IsValidated]
     serializer_class = CommentSerializer
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('video_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='id видео для фильтрации',
+                              required=False),
+            openapi.Parameter('emotion_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='id эмоции для фильтрации',
+                              required=False),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        video_id = self.request.query_params.get('video_id', None)
+        emotion_id = self.request.query_params.get('emotion_id', None)
+
+        if video_id:
+            self.queryset = self.queryset.filter(video__id=video_id)
+        if emotion_id:
+            self.queryset = self.queryset.filter(emotion__id=emotion_id)
+
+        return super().list(request, *args, **kwargs)
 
 
 class VideoGroupViewSet(viewsets.ModelViewSet):

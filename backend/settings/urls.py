@@ -67,6 +67,7 @@ urlpatterns = [
     path('api/v1/login/', LoginView.as_view()),
     path('api/v1/refresh/', RefreshView.as_view()),
     path('api/v1/', include(ChannelRouter.urls)),
+    path('api/v1/', include(CommentRouter.urls)),
     path('api/v1/', include(ChannelGroupRouter.urls)),
     path('api/v1/', include(VideoRouter.urls)),
     path('api/v1/', include(VideoGroupRouter.urls)),
