@@ -31,7 +31,7 @@ ALLOWED_HOSTS = ["*","92.63.102.92"]
 
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000","http://127.0.0.1:9000"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000","http://127.0.0.1:9000", "http://youtube-analytics.ru"]
 
 
 # Application definition
@@ -148,7 +148,6 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
-
 
 
 

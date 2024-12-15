@@ -23,7 +23,7 @@ class Channel(models.Model):
 
 class ChannelGroup(models.Model):
     title = models.TextField()
-    channel = models.ManyToManyField(Channel, related_name="channel_group",blank=True)
+    channel = models.ManyToManyField(Channel, related_name="channel_group", blank=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name="channel_group")
 
     class Meta:
@@ -46,6 +46,13 @@ class Video(models.Model):
         db_table = 'tb_video'
 
 
+class Emotion(models.Model):
+    name = models.TextField()
+
+    class Meta:
+        db_table = 'tb_emotion'
+
+
 class Comment(models.Model):
     video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, related_name="comment", to_field="yt_id")
     yt_id = models.TextField(unique=True)
@@ -56,7 +63,7 @@ class Comment(models.Model):
     updated_at = models.DateTimeField()
     total_reply_count = models.IntegerField()
     replies = models.ManyToManyField('self')
-    emotions = models.TextField(default=None, null=True, blank=True)
+    emotion = models.IntegerField(default=None, null=True, blank=True)
 
     class Meta:
         db_table = 'tb_comment'

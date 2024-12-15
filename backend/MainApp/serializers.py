@@ -28,6 +28,12 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class EmotionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Emotion
+        fields = '__all__'
+
+
 class VideoGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoGroup
@@ -73,6 +79,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'is_verified', 'is_staff', 'is_active', 'date_joined']
 
+
 class AddVideoToGroupSerializer(serializers.Serializer):
     video_group_id = serializers.IntegerField()
     video_yt_id = serializers.CharField()
@@ -81,6 +88,7 @@ class AddVideoToGroupSerializer(serializers.Serializer):
 class AddChannelToGroupSerializer(serializers.Serializer):
     channel_group_id = serializers.IntegerField()
     custom_url = serializers.CharField()
+
 
 class ResetPasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)

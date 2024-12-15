@@ -1,15 +1,28 @@
 from collections import defaultdict
 
+import torch
 from pysentimiento import create_analyzer
-from pysentimiento.preprocessing import preprocess_tweet
-from transformers import pipeline
+from pysentimiento.analyzer import AnalyzerOutput
+import os
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
 
 
 class Analyser:
     def __init__(self, lang='en'):
-        self._emotion_analyzer = create_analyzer(task="emotion", lang=lang)
+        # self._emotion_analyzer2 = create_analyzer(task="emotion", lang=lang)
         self._hate_speech_analyzer = create_analyzer(task="hate_speech", lang=lang)
         self._sentiment_analyzer = create_analyzer(task="sentiment", lang=lang)
+
+        # Resolve absolute path to the fine_tuned_rubert directory
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        path = os.path.join(base_dir, "fine_tuned_rubert")
+
+        # Load the model
+        self._emotion_analyzer = AutoModelForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=path,
+            local_files_only=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=path, local_files_only=True)
+        self._emotion_analyzer.eval()  # Set model to evaluation mode
         self._language_recognizer = pipeline("text-classification", model="papluca/xlm-roberta-base-language-detection")
         # self._translator = Translator()
         self.result = None
@@ -17,16 +30,47 @@ class Analyser:
     def recognise_lang(self, text: str) -> str:
         return self._language_recognizer(text)
 
+    def analyse_emotion_old(self, data: str, lang='en'):
+        return self._emotion_analyzer2.predict(data)
+
     def analyse_emotion(self, data: str, lang='en'):
-        data = preprocess_tweet(data, lang=lang)
-        return self._emotion_analyzer.predict(data)
+        inputs = self.tokenizer(data, truncation=True, padding='max_length', max_length=128, return_tensors="pt")
+        with torch.no_grad():
+            outputs = self._emotion_analyzer(**inputs)
+            logits = outputs.logits
+
+        # Convert logits to probabilities
+        probabilities = torch.nn.functional.softmax(logits, dim=1)
+
+        # Get the predicted label
+        predicted_label = torch.argmax(probabilities, dim=1).item()
+
+        label_to_emotion = {
+            0: "sadness",
+            1: "joy",
+            2: "love",
+            3: "anger",
+            4: "fear",
+            5: "surprise",
+            6: "neutral"
+        }
+        probabilities = probabilities.squeeze()
+
+        # Get the predicted label
+        if max(probabilities) < 0.3:
+            probabilities[6] = 1
+
+        # Map probabilities to their labels
+        probas_dict = {label_to_emotion[i]: prob.item() for i, prob in enumerate(probabilities)}
+
+        # Create the AnalyzerOutput
+        output = AnalyzerOutput(probas=probas_dict, sentence=data, context=None)
+        return output
 
     def analyse_hate_speech(self, data: str, lang='en'):
-        data = preprocess_tweet(data, lang=lang)
         return self._hate_speech_analyzer.predict(data)
 
     def analyse_sentiment(self, data: str, lang='en'):
-        data = preprocess_tweet(data, lang=lang)
         return self._sentiment_analyzer.predict(data)
 
     def analyse_comments(self, comments: dict, analysis_types: dict):
@@ -36,8 +80,8 @@ class Analyser:
             # todo add translation
             text = entry[1]
             ans = dict()
-            if len(text) > 400:
-                text = text[:400]
+            if len(text) > 256:
+                text = text[:256]
             if analysis_types.get('lang') is not None:
                 lang = self.recognise_lang(text)
                 ans['lang'] = lang
@@ -63,5 +107,3 @@ class Analyser:
             res['word_count'] = frequency
         self.result = res
         return res
-
-

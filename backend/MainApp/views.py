@@ -9,7 +9,9 @@ from django.urls import reverse
 from drf_yasg import openapi
 from drf_yasg.openapi import Schema, TYPE_OBJECT, TYPE_STRING
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,6 +25,12 @@ from MainApp.serializers import *
 from rest_framework import viewsets, permissions, status
 
 
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
+
 class IsValidated(BasePermission):
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated and request.user.is_verified)
@@ -32,6 +40,12 @@ class ChannelViewSet(viewsets.ModelViewSet):
     queryset = Channel.objects.all()
     permission_classes = [IsValidated]
     serializer_class = ChannelSerializer
+
+
+class EmotionViewSet(viewsets.ModelViewSet):
+    queryset = Emotion.objects.all()
+    permission_classes = [IsValidated]
+    serializer_class = EmotionSerializer
 
 
 class ChannelGroupViewSet(viewsets.ModelViewSet):
@@ -70,9 +84,33 @@ class VideoViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    queryset = Comment.objects.all()
-    permission_classes = [IsValidated]
+    queryset = Comment.objects
+    permission_classes = [permissions.AllowAny]
     serializer_class = CommentSerializer
+    pagination_class = StandardResultsSetPagination
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('video_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,
+                              description='id видео для фильтрации',
+                              required=True),
+            openapi.Parameter('emotion_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='id эмоции для фильтрации',
+                              required=False),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        video_id = self.request.query_params.get('video_id', None)
+        emotion_id = self.request.query_params.get('emotion_id', None)
+
+        if video_id:
+            self.queryset = self.queryset.filter(video__yt_id=video_id)
+        else:
+            raise ParseError("product_category: обязательный параметр")
+        if emotion_id:
+            self.queryset = self.queryset.filter(emotion__id=emotion_id)
+
+        return super().list(request, *args, **kwargs)
 
 
 class VideoGroupViewSet(viewsets.ModelViewSet):

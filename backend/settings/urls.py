@@ -53,6 +53,9 @@ VideoRouter.register(r'video', VideoViewSet)
 CommentRouter = routers.DefaultRouter()
 CommentRouter.register(r'comment', CommentViewSet)
 
+EmotionRouter = routers.DefaultRouter()
+EmotionRouter.register(r'emotion', EmotionViewSet)
+
 VideoGroupRouter = routers.DefaultRouter()
 VideoGroupRouter.register(r'video-group', VideoGroupViewSet)
 
@@ -67,6 +70,8 @@ urlpatterns = [
     path('api/v1/login/', LoginView.as_view()),
     path('api/v1/refresh/', RefreshView.as_view()),
     path('api/v1/', include(ChannelRouter.urls)),
+    path('api/v1/', include(CommentRouter.urls)),
+    path('api/v1/', include(EmotionRouter.urls)),
     path('api/v1/', include(ChannelGroupRouter.urls)),
     path('api/v1/', include(VideoRouter.urls)),
     path('api/v1/', include(VideoGroupRouter.urls)),
