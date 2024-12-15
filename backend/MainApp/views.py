@@ -77,7 +77,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter('video_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+            openapi.Parameter('video_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,
                               description='id видео для фильтрации',
                               required=True),
             openapi.Parameter('emotion_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
