@@ -90,7 +90,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         emotion_id = self.request.query_params.get('emotion_id', None)
 
         if video_id:
-            self.queryset = self.queryset.filter(video__id=video_id)
+            self.queryset = self.queryset.filter(video__yt_id=video_id)
         else:
             raise ParseError("product_category: обязательный параметр")
         if emotion_id:
