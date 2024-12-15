@@ -73,12 +73,22 @@ def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False
             next(iter(analyser.result.values())).get('emotion') is None:
         d_type = {'emotion': True}
         analyser.analyse_comments(comments, d_type)
-    types = ['others', 'joy', 'sadness', 'anger', 'surprise', 'disgust', 'fear']
+    label_to_emotion = {
+        0: "sadness",
+        1: "joy",
+        2: "love",
+        3: "anger",
+        4: "fear",
+        5: "surprise",
+        6: "neutral"
+    }
+    types = label_to_emotion.values()
     counts = dict(zip(types, [0] * len(types)))
     for entry in analyser.result.values():
-        for t in types:
+        for t in label_to_emotion.values():
             if entry['emotion'].output == t:
                 counts[t] += 1
+
     sizes = [i for i in counts.values()]
     if make_plot:
         graph_counts_emotion(types, sizes, video_name)
