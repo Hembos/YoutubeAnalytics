@@ -9,6 +9,7 @@ from django.urls import reverse
 from drf_yasg import openapi
 from drf_yasg.openapi import Schema, TYPE_OBJECT, TYPE_STRING
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.exceptions import ParseError
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
@@ -71,14 +72,14 @@ class VideoViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects
-    permission_classes = [IsValidated]
+    permission_classes = [permissions.AllowAny]
     serializer_class = CommentSerializer
 
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter('video_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description='id видео для фильтрации',
-                              required=False),
+                              required=True),
             openapi.Parameter('emotion_id', openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description='id эмоции для фильтрации',
                               required=False),
@@ -90,6 +91,8 @@ class CommentViewSet(viewsets.ModelViewSet):
 
         if video_id:
             self.queryset = self.queryset.filter(video__id=video_id)
+        else:
+            raise ParseError("product_category: обязательный параметр")
         if emotion_id:
             self.queryset = self.queryset.filter(emotion__id=emotion_id)
 
