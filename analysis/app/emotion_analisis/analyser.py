@@ -52,16 +52,18 @@ class Analyser:
             5: "surprise",
             6: "neutral"
         }
+        # Get the predicted label
+        predicted_label = torch.argmax(probabilities).item()
         probabilities = probabilities.squeeze()
 
         # Get the predicted label
         if max(probabilities) < 0.3:
             probabilities[6] = 1
+            predicted_label = 6
 
         # Map probabilities to their labels
         probas_dict = {label_to_emotion[i]: prob.item() for i, prob in enumerate(probabilities)}
-        # Get the predicted label
-        predicted_label = max(probabilities)
+
         # Create the AnalyzerOutput
         output = AnalyzerOutput(probas=probas_dict, sentence=data, context=None)
         print(output)
