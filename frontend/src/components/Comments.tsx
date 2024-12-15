@@ -44,7 +44,10 @@ const Comments: React.FC<Props> = (props: Props) => {
         response = await $api.get<AuthResponse>("comment/", {
           params: { video_id: props.yt_id, emotion_id: props.emotion_id },
         });
-      else response = await $api.get<AuthResponse>(page);
+      else {
+        page = "https" + page.slice(4);
+        response = await $api.get<AuthResponse>(page);
+      }
 
       // setCommentsData(response.data as unknown as CommentsData);
       setCommentsData(response.data as unknown as CommentsData);

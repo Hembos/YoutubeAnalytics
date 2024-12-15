@@ -1,7 +1,7 @@
 import axios from "axios";
 import { AuthResponse } from "../models/response/AuthResponse";
 
-export const API_URL = "http://youtube-analytics.ru/api/v1";
+export const API_URL = "https://youtube-analytics.ru/api/v1";
 
 const $api = axios.create({
   withCredentials: true,
