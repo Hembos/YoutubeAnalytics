@@ -21,7 +21,7 @@ def process(db: DataBase, port: int):
     analyser = Analyser()
     loader = Loader(db=db)
     while True:
-        request = db.get_scraper_request(7, 13)
+        request = db.get_scraper_request(7, 14)
         if not request:
             continue
         data = json.loads(request[4])
@@ -39,7 +39,7 @@ def process(db: DataBase, port: int):
             'video_info': loader.get_video_info(video_id, channel_id),
             'userId': request[5]
         }
-        print(request)
+        print("req", request)
         start_time = time.time()
         requests_func[request[1]](data, db, analyser)
         end_time = time.time()

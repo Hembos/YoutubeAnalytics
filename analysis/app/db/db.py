@@ -201,16 +201,16 @@ class DataBase:
         if exists:
             update_query = """
                 UPDATE tb_calculation_result 
-                SET result = %s, updated = %s 
+                SET result = %s
                 WHERE yt_id = %s AND type_id = %s AND user_id = %s
             """
-            self.__db.execute(update_query, (metric, data['updated'], element_id, param, user_id ))
+            self.__db.execute(update_query, (metric, element_id, param, user_id ))
         else:
             update_query = """
-                INSERT INTO tb_calculation_result (result, user_id, yt_id, type_id, updated) 
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO tb_calculation_result (result, user_id, yt_id, type_id) 
+                VALUES (%s, %s, %s, %s)
             """
-            self.__db.execute(update_query, (metric, user_id, element_id, param, data['updated']))
+            self.__db.execute(update_query, (metric, user_id, element_id, param))
         self.__db_connection.commit()
         return exists is not None
 
@@ -235,3 +235,49 @@ class DataBase:
             self.__db.execute(query, (metric_type, video_id))
             return self.__db.fetchone()
         return {}
+    
+    def update_comment_emotions(self, emotions: dict, batch_size: int = 1000) -> bool:
+        """
+        Update the emotion field in the tb_comment table using batching for large datasets.
+
+        Args:
+            emotions (dict): A dictionary mapping comment IDs to emotion IDs.
+            batch_size (int): The number of updates to process in a single batch. Default is 1000.
+
+        Returns:
+            bool: True if the update is successful, False otherwise.
+        """
+        try:
+            # Convert dictionary to a list of tuples for processing
+            data = [(emotion_id + 1, comment_id) for comment_id, emotion_id in emotions.items()]
+            
+            # Split the data into batches
+            for i in range(0, len(data), batch_size):
+                batch = data[i:i + batch_size]
+                
+                # Generate SQL for bulk update in batch
+                placeholders = ', '.join(['(%s, %s)'] * len(batch))
+                update_emotion_query = f"""
+                    UPDATE tb_comment 
+                    SET emotion_id = data_table.emotion
+                    FROM (VALUES {placeholders}) AS data_table(emotion, yt_id)
+                    WHERE tb_comment.yt_id = data_table.yt_id
+                """
+                
+                # Flatten batch data for parameterized query
+                flattened_data = [item for pair in batch for item in pair]
+                
+                # Execute the batch update
+                self.__db.execute(update_emotion_query, flattened_data)
+                self.__db_connection.commit()
+            
+            logging.info("Emotions updated successfully in tb_comment table using batch updates.")
+            return True
+        except Exception as e:
+            logging.error(f"Failed to update emotions in tb_comment table using batch updates: {e}")
+            self.__db_connection.rollback()
+            return False
+
+
+        
+    

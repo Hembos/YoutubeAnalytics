@@ -61,12 +61,14 @@ def plot_counts_neg_and_pos(comments: dict, video_name: str, make_plot: bool = F
 
 
 def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False, analyser: Analyser = None):
+    print("plot")
     if analyser is None:
         analyser = Analyser()
     if analyser.result is None or len(analyser.result.values()) > 0 and \
             next(iter(analyser.result.values())).get('emotion') is None:
         d_type = {'emotion': True}
-        analyser.analyse_comments(comments, d_type)
+        res = analyser.analyse_comments(comments, d_type)
+        print("stop", res)
     label_to_emotion = {
         0: "sadness",
         1: "joy",
@@ -76,13 +78,15 @@ def plot_counts_emotion(comments: dict, video_name: str, make_plot: bool = False
         5: "surprise",
         6: "neutral"
     }
+    print(label_to_emotion)
     types = label_to_emotion.values()
+    print(types)
     counts = dict(zip(types, [0] * len(types)))
-    print(counts)
     for entry in analyser.result.values():
         for t in label_to_emotion.values():
             if entry['emotion'].output == t:
                 counts[t] += 1
+    print(counts)
 
     sizes = [i for i in counts.values()]
     if make_plot:

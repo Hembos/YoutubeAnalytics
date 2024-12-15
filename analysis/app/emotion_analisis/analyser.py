@@ -35,7 +35,9 @@ class Analyser:
         return self._emotion_analyzer2.predict(data)
 
     def analyse_emotion(self, data: str, lang='en'):
+        # print("analyse_emotion",data)
         inputs = self.tokenizer(data, truncation=True, padding='max_length', max_length=128, return_tensors="pt")
+        # print(data)
         with torch.no_grad():
             outputs = self._emotion_analyzer(**inputs)
             logits = outputs.logits
@@ -55,19 +57,19 @@ class Analyser:
         }
         # Get the predicted label
         predicted_label = torch.argmax(probabilities).item()
-        probabilities = probabilities.squeeze()
+        probabilities = probabilities.squeeze().tolist()
 
         # Get the predicted label
         if max(probabilities) < 0.3:
-            probabilities[6] = 1
+            probabilities.append(1)
             predicted_label = 6
 
         # Map probabilities to their labels
-        probas_dict = {label_to_emotion[i]: prob.item() for i, prob in enumerate(probabilities)}
+        probas_dict = {label_to_emotion[i]: prob for i, prob in enumerate(probabilities)}
 
         # Create the AnalyzerOutput
         output = AnalyzerOutput(probas=probas_dict, sentence=data, context=None)
-        print(output)
+        # print(output)
         return output, predicted_label
 
     def analyse_hate_speech(self, data: str, lang='en'):
@@ -77,9 +79,10 @@ class Analyser:
         return self._sentiment_analyzer.predict(data)
 
     def analyse_comments(self, comments: dict, analysis_types: dict):
+        print("analyse_comments", analysis_types, analysis_types.get('emotion'))
         res = dict()
         frequency = defaultdict(int)
-        for key, entry in comments.values():
+        for key, entry in comments.items():
             text = entry[1]
             ans = dict()
             if len(text) > 256:
