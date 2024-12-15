@@ -42,6 +42,12 @@ class ChannelViewSet(viewsets.ModelViewSet):
     serializer_class = ChannelSerializer
 
 
+class EmotionViewSet(viewsets.ModelViewSet):
+    queryset = Emotion.objects.all()
+    permission_classes = [IsValidated]
+    serializer_class = EmotionSerializer
+
+
 class ChannelGroupViewSet(viewsets.ModelViewSet):
     queryset = ChannelGroup.objects.all()
     permission_classes = [IsValidated]
