@@ -27,6 +27,7 @@ def get_emotion_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:
     comments = data['comments']
     metric_emotion = plot_counts_emotion(comments, video_id, analyser=analyser)
     db.store_analisis(video_id, metric_emotion, GET_ANALYSIS_OF_EMOTION)
+    db.update_comment_emotions(comments)
 
 
 def get_likes_vs_replies_analisis(data: dict, db: DataBase, analyser: Analyser) -> None:

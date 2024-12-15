@@ -4,12 +4,13 @@ import unittest
 from matplotlib import pyplot as plt
 from matplotlib.dates import num2date
 
-from analysis.app.db.db import DataBase
-from analysis.app.metrics.loader import Loader
+from app.db.db import DataBase
+from app.emotion_analisis.analyser import Analyser
+from app.metrics.loader import Loader
 
-from analysis.app.metrics.metric import *
+from app.metrics.metric import *
 
-from analysis.app.metrics.collector import Collector
+from app.metrics.collector import Collector
 
 
 class TestAnalisis(unittest.TestCase):

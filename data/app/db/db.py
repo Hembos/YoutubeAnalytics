@@ -53,6 +53,33 @@ class DataBase:
 
         return result
 
+    def update_comment_emotions(self, emotions: dict) -> bool:
+        """
+        Update the emotion field in the tb_comment table.
+
+        Args:
+            emotions (dict): A dictionary mapping comment IDs to emotion IDs.
+                             Example: { "comment_id_1": 1, "comment_id_2": 2 }
+
+        Returns:
+            bool: True if the update is successful, False otherwise.
+        """
+        try:
+            for comment_id, emotion_id in emotions.items():
+                update_emotion_query = """
+                    UPDATE tb_comment 
+                    SET emotion = %s 
+                    WHERE yt_id = %s
+                """
+                self.__db.execute(update_emotion_query, (emotion_id, comment_id))
+            self.__db_connection.commit()
+            logging.info("Emotions updated successfully in tb_comment table.")
+            return True
+        except Exception as e:
+            logging.error(f"Failed to update emotions in tb_comment table: {e}")
+            self.__db_connection.rollback()
+            return False
+
     def get_available_api(self, min_quota_size) -> dict | None:
         self.__db.execute("select api_key, remaining_quota from tb_api_keys where remaining_quota>=%(min_quota_size)s",
                           {"min_quota_size": min_quota_size})
