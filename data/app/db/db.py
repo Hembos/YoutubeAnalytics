@@ -71,7 +71,7 @@ class DataBase:
                     SET emotion = %s 
                     WHERE yt_id = %s
                 """
-                self.__db.execute(update_emotion_query, (emotion_id, comment_id))
+                self.__db.execute(update_emotion_query, (emotion_id + 1, comment_id))
             self.__db_connection.commit()
             logging.info("Emotions updated successfully in tb_comment table.")
             return True
