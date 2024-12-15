@@ -54,7 +54,7 @@ class Emotion(models.Model):
 
 
 class Comment(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, related_name="comment", to_field="yt_id")
+    video = models.ForeignKey(Video, on_delete=models.DO_NOTHING, related_name="comment", to_field="yt_id", null=True, default=None)
     yt_id = models.TextField(unique=True)
     original_text = models.TextField()
     author_display_name = models.TextField()
